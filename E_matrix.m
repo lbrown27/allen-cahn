@@ -2,9 +2,9 @@ function E = E_matrix(rho_cp, u, k, pc)
 
  diff_E = zeros(pc.N+2,pc.N+2);
 adv_E = zeros(pc.N+2,pc.N+2);
-
- diff_E = sparse(zeros(pc.N+2,pc.N+2));
- adv_E = sparse(zeros(pc.N+2,pc.N+2));
+E = sparse(zeros(pc.N + 2, pc.N +2));
+ %diff_E = sparse(zeros(pc.N+2,pc.N+2));
+ %adv_E = sparse(zeros(pc.N+2,pc.N+2));
 for i = 2:pc.N +1
     i_plus = i;
 i_minus = i - 1; % indices for flux terms
@@ -24,7 +24,7 @@ i_minus = i - 1; % indices for flux terms
   
 end
 
-E = diff_E + adv_E;
+%E = diff_E + adv_E;
 
 
 %E(1,1) = rho_cp(1) * u(1)/ (2 * pc.dx) - (k(2) + k(1)) / (2 * pc.dx^2);

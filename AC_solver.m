@@ -37,8 +37,8 @@ c_old = c_n;
 % set the BC that the wall is ice.
 
 
-figure(2);
-plot(x_coll, c_n);
+%figure(2);
+%plot(x_coll, c_n);
 % Initialize the temperature field and set the wall temperature.
 % First cell is ice.
 T_init = 273.15 + .02;
@@ -80,7 +80,7 @@ A_pres(end,end-1) = 0;
 count = 0;
 trigger = 0;
 %for count = 1:num_iterations * refinement_factor
-while physical_time < 1
+while physical_time < 20
     %% Step 1: Calculate c at time n + 1 using the Allen-Cahn equation.
     % copy old phase field to storage
     
@@ -103,8 +103,9 @@ while physical_time < 1
     %% Step 3: Find the approximate velocity u* at time step n+1 using the momentum equation SANS pressure term.
     
     %u_star = explicit_solve(rho_n, rho_new, eta_n, pc, c_n, u_n,rho_old,eta_old, c_old,u_old);
-    %u_star = trap_solve(rho_new, eta_new, pc,u_n,rho_n, eta_n, c_n, c_new); % NEEDS to be tested to see if BC's work!
-    u_star = backward_euler_momentum_solve(rho_new, eta_new, pc,u_n,rho_n, eta_n, c_n, c_new); % NEEDS to be tested to see if BC's work!
+    imp_u_star = backward_euler_momentum_solve(rho_new, eta_new, pc,u_n,rho_n, eta_n, c_n, c_new); % NEEDS to be tested to see if BC's work!
+    u_star = imp_u_star; % this line switches the code from explicit to implicit!
+    %diff_exp_imp = u_star - imp_u_star;
     %% Step 4: Calculate the pressure field by solving a poisson equation
     RHS_Pres = RHS_PE(rho_new,pc,u_n,c_new, T_n,eta_new, u_star);
     P_new = matrix_solve(P,RHS_Pres,pc,A_pres);
@@ -129,9 +130,9 @@ while physical_time < 1
     E_n = E_matrix(rho_cp_n, u_n, k_n, pc);
     
     % Crank nicolson
-    A_temp = sparse(diag(rho_cp_new) - .5 * pc.dt * E_new);
+    A_temp = diag(rho_cp_new) - .5 * pc.dt * E_new;
     B = (.5 * pc.dt * E_n) * T_n;
-    C = (-rhs_ac(c_new,T_n,u_new,eta_new,rho_new, pc) * pc.dt .*rho_new  .* pc.L);% .* (T_n < 273.15); % IS THIS LINE GOOD?
+    C = (-rhs_ac(c_new,T_n,u_new,eta_new,rho_new, pc) * pc.dt * pc.rho_ice * pc.L);% .* (T_n < 273.15); % IS THIS LINE GOOD?
     D = rho_cp_n .* T_n;
     
     Visc = zeros(pc.N + 2,1);
@@ -170,13 +171,14 @@ while physical_time < 1
     %u_diff = u_new - u_new_before_correction;
     
     %% Step 8: Determine next time step size
-%     t_v = .5 * pc.dx ^ 2 *pc.rho_ice/ max(eta_new)*10;
-%     t_c = pc.dx / max(abs(u_new));
-%     t_s = .5 * sqrt(pc.rho_water / pc.sigma_c * pc.dx^3);
-%     TIME = [t_v,t_c,t_s];
-%     % calculate the next time step based off solver info
-%     new_timestep =  .5* min(TIME)/refinement_factor;
-    new_timestep = 1e-7;
+    t_v = .5 * pc.dx ^ 2 *pc.rho_ice/ max(eta_new)*10;
+    t_c = pc.dx / max(abs(u_new));
+    t_s = .5 * sqrt(pc.rho_water / pc.sigma_c * pc.dx^3);
+    %t_visc_jump = pc.dx ^ 2 * (rho_ice + rho_water) * .5 /(eta_ice - eta_water);
+    TIME = [t_v,t_c,t_s];
+    % calculate the next time step based off solver info
+    new_timestep =  .5* min(TIME)/refinement_factor;
+    new_timestep = 5e-7;
     %% Step 9: Set up solver for next loop.
     
     c_old = c_n;
@@ -238,7 +240,13 @@ while physical_time < 1
         title('RUn function');
         xlim([x_coll(1), x_stag(end)])
         drawnow();
-
+        %fprintf("graphs updated. \n");
+        %fprintf("c_new(2): %.16f \n",c_new(2));
+        recommended_timestep = ac_rec_time(u_new,pc, c_new,T_n);
+        %fprintf("TIME SCALES: \n");
+%         fprintf("convective: %.16f \n", t_a);
+%         fprintf("diffusive: %.16f \n",t_d);
+%         fprintf("function: %.16f \n", t_f);
 %save(['backup_' num2str(count)]);
     end
     if (trigger == 0)
@@ -247,7 +255,7 @@ while physical_time < 1
         end
     end
     
-   % magic = calculate_residual(c_new,T_new,u_new,eta_new,rho_new, pc);
+    magic = calculate_residual(c_new,T_new,u_new,eta_new,rho_new, pc);
 end
 subplot(2,2,1);
 plot(x_coll,c_new); % plot phase field after one step
