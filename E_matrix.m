@@ -1,7 +1,4 @@
 function E = E_matrix(rho_cp, u, k, pc)
-
- diff_E = zeros(pc.N+2,pc.N+2);
-adv_E = zeros(pc.N+2,pc.N+2);
 E = sparse(zeros(pc.N + 2, pc.N +2));
  %diff_E = sparse(zeros(pc.N+2,pc.N+2));
  %adv_E = sparse(zeros(pc.N+2,pc.N+2));

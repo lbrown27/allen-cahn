@@ -64,7 +64,7 @@ P(1) = P(2);
 P(pc.N + 2) = 0 - P(pc.N + 1);
 
 num_iterations = 2500000;
-print_interval = 1000;
+print_interval = 10000;
 physical_time = 0;
 refinement_factor = 1;
 % error_max keeps track of largest discrepancy between the explicit and
@@ -234,9 +234,7 @@ while physical_time < 20
         title('c diff');
         xlim([x_coll(1), x_stag(end)])
             %max(abs(u_diff))
-                magic = calculate_residual(c_new,T_new,u_new,eta_new,rho_new, pc);
-
-    max(magic)
+    max(magic);
 
         
         
@@ -260,6 +258,7 @@ while physical_time < 20
         end
     end
     
+    magic = calculate_residual(c_new,T_new,u_new,eta_new,rho_new, pc);
 end
 subplot(2,2,1);
 plot(x_coll,c_new); % plot phase field after one step
