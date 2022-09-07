@@ -27,8 +27,8 @@ u_old = zeros(pc.N+2,1); % store the old velocity
 
 c_n = ones(pc.N + 2,1) * 0;
 c_n(pc.N + 2) = c_n(pc.N + 1);
-c_n_experimental = c_init(c_n,x_coll,pc);
-c_n = c_n_experimental; % ADDED THIS LINE, ITS EXPERIMENTAL!
+%c_n_experimental = c_init(c_n,x_coll,pc);
+%c_n = c_n_experimental; % ADDED THIS LINE, ITS EXPERIMENTAL!
 c_n(1) = -2 - c_n(2);
 c_old = c_n;
 
@@ -60,7 +60,7 @@ P(1) = P(2);
 P(pc.N + 2) = 0 - P(pc.N + 1);
 
 num_iterations = 2500000;
-print_interval = 1000;
+print_interval = 0;
 physical_time = 0;
 refinement_factor = 1;
 % error_max keeps track of largest discrepancy between the explicit and
@@ -175,7 +175,7 @@ while physical_time < 20
     TIME = [t_v,t_c,t_s];
     % calculate the next time step based off solver info
     new_timestep =  .5* min(TIME)/refinement_factor;
-    new_timestep = 10^-6;
+    new_timestep = 10^-7;
     %% Step 9: Set up solver for next loop.
     percent_lost = mass_counter(rho_new, rho_n, pc, c_new, c_n,mass_orig, x_coll);
 

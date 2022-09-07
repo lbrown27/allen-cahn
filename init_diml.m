@@ -1,9 +1,9 @@
 function pc = init_diml()
 %% Initializes constants of the problem according to the first test case.
 N = 50;
-l = .00050;
+l = .0005;
 dx = l / (N);
-Mc = 1*10^-4;
+Mc = 1*10^-5;
 sigma_c = .0317;
 conversion_smallness_factor = 2.64*10^-4 / (4 * 10^-3);
 ksi_c = l * conversion_smallness_factor;
