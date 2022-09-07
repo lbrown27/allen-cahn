@@ -26,8 +26,6 @@ u_old = zeros(pc.N+2,1); % store the old velocity
 
 
 c_n = ones(pc.N + 2,1) * 0;
-c_n(1) = -1;
-%c_n(2) = -.5;
 c_n(pc.N + 2) = c_n(pc.N + 1);
 %c_n_experimental = c_init(c_n,x_coll,pc);
 %c_n = c_n_experimental; % ADDED THIS LINE, ITS EXPERIMENTAL!
@@ -37,8 +35,6 @@ c_old = c_n;
 % set the BC that the wall is ice.
 
 
-%figure(2);
-%plot(x_coll, c_n);
 % Initialize the temperature field and set the wall temperature.
 % First cell is ice.
 T_init = 273.15 + .02;
@@ -50,7 +46,7 @@ T_n(1) = 2 * wall_temp - T_n(2); % wall temperature
 % variable
 rho_n = (c_n+1)*pc.rho_water - c_n * pc.rho_ice;
 rho_old = rho_n; % due to initial condition, this is the same
-
+mass_orig = sum(rho_n(2:pc.N + 1))*pc.dx;
 
 eta_n = (c_n+1)*pc.eta_water - c_n * pc.eta_ice;
 eta_old = eta_n;
@@ -64,7 +60,7 @@ P(1) = P(2);
 P(pc.N + 2) = 0 - P(pc.N + 1);
 
 num_iterations = 2500000;
-print_interval = 1000;
+print_interval = 500;
 physical_time = 0;
 refinement_factor = 1;
 % error_max keeps track of largest discrepancy between the explicit and
@@ -106,7 +102,7 @@ while physical_time < 20
     u_star = imp_u_star; % this line switches the code from explicit to implicit!
     %diff_exp_imp = u_star - imp_u_star;
     %% Step 4: Calculate the pressure field by solving a poisson equation
-    RHS_Pres = RHS_PE(rho_new,pc,u_n,c_new, T_n,eta_new, u_star);
+    RHS_Pres = RHS_PE(rho_new,pc,u_n,c_new, T_n,eta_new, u_star,rho_n,rho_old);
     P_new = matrix_solve(P,RHS_Pres,pc,A_pres);
     %P_new = gauss_seidel(P,RHS_PE(rho_new, rho_n, rho_old, pc, u_star),pc);
     %P_new_acc = accelerated_gauss_seidel(P,RHS_PE(rho_new, rho_n, rho_old, pc, u_star),pc);
@@ -178,9 +174,10 @@ while physical_time < 20
     TIME = [t_v,t_c,t_s];
     % calculate the next time step based off solver info
     new_timestep =  .5* min(TIME)/refinement_factor;
-    new_timestep = 5e-7;
+    new_timestep = 10^-6;
     %% Step 9: Set up solver for next loop.
-    
+    percent_lost = mass_counter(rho_new, rho_n, pc, c_new, c_n,mass_orig, x_coll);
+
     c_old = c_n;
     c_n = c_new;
     eta_old = eta_n;
@@ -252,11 +249,7 @@ while physical_time < 20
 %         fprintf("diffusive: %.16f \n",t_d);
 %         fprintf("function: %.16f \n", t_f);
 %save(['backup_' num2str(count)]);
-    end
-    if (trigger == 0)
-        if (max(abs(u_new)) > 0)
-            trigger = count;
-        end
+fprintf("percent lost: %.16f \n",percent_lost);
     end
     
 end
