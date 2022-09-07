@@ -14,7 +14,7 @@ for i = 2:pc.N + 1
     %B = 0;
     %B = pc.Mc * 6 * pc.ksi_c^2 *(c(i+1) - 2 * c(i) + c(i-1))/pc.dx^2; % DIFFUSION-LIKE TERM, CHANGED!
 
-    f(i) = A+B+C;
+    f(i) = A+B+ C + D;
     
 end
 end

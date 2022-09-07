@@ -88,7 +88,6 @@ while physical_time < 20
     c_new = c_step(c_n, T_n,u_n,c_old,eta_new, eta_old,rho_n, pc);
     else 
       c_new = c_step_fe(c_n, T_n,u_n,c_old,eta_new, eta_old,rho_n, pc);
-        
     end
     c_diff = c_new - c_n;
     [t_a, t_d, t_f] = calculate_timescales(pc, u_n,rho_n);
