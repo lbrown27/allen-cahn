@@ -95,10 +95,12 @@ while find_interface_loc(c_n, x_coll,pc) < pc.l
     %% Step 2: Obtain density, thermal conductivity, and viscosity at time n+1:
     
     rho_new = (c_new+1)*pc.rho_water - c_new * pc.rho_ice; %this is a new value since calculated with c new.
+    %rho_new = ones(pc.N + 2, 1) * pc.rho_water; % ADDED THIS LINE IN DEBUGGING, INVALID FOR TYPICAL PROBLEM
     rho_new_flux = rho_flux(rho_new,pc);
     eta_new = (c_new+1)*pc.eta_water - c_new * pc.eta_ice;
     k_new = (c_new+1)*pc.k_water - c_new * pc.k_ice;
-    rho_cp_n = pc.rho_water * pc.cp_water * (1 + c_n) + pc.rho_ice * pc.cp_ice * (- c_n);
+      rho_cp_n = pc.rho_water * pc.cp_water * (1 + c_n) + pc.rho_ice * pc.cp_ice * (- c_n);
+    
     rho_cp_new = pc.rho_water * pc.cp_water * (1 + c_new) + pc.rho_ice * pc.cp_ice * (- c_new);
     %% Step 3: Find the approximate velocity u* at time step n+1 using the momentum equation SANS pressure term.
     
@@ -117,7 +119,11 @@ while find_interface_loc(c_n, x_coll,pc) < pc.l
     u_new(pc.N + 2) = u_new(pc.N + 1);
     %u_new(pc.N) = u_new(pc.N - 1);
     %% Step 6: Solve the energy equation
-    T_new = solve_temp_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,pc);    
+    % TODO: Add viscous dissipation!
+ 
+    
+    ADD TEMP SOLVING HERE!!!!
+    
     %% Step 7: correct the ice velocity to zero:
     %u_new_before_correction = u_new;
     %u_new_before_correction = u_new;
@@ -152,7 +158,7 @@ while find_interface_loc(c_n, x_coll,pc) < pc.l
     %new_timestep = 10^-7;
     pc.dt = new_timestep;
     %fprintf("%d \n", count);
-    count = count + 1;
+    count = count + 1;    
     
     %if ((count < print_interval) && (mod(count,print_interval) == 0)) || ((count > print_interval)&& (mod(count,10) == 0))
     if (mod(count,print_interval) == 0)
