@@ -1,4 +1,4 @@
-function T_new = solve_temp_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,pc)
+function T_new = solve_temp_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,T_n,c_new, eta_new,rho_new,wall_temp,pc)
 
     E_new = E_matrix_shifted(rho_cp_new, u_new, k_new, pc);
     E_n = E_matrix_shifted(rho_cp_n, u_n, k_n, pc);
@@ -31,6 +31,8 @@ function T_new = solve_temp_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,pc)
     A_temp(1,1) = 1;
     A_temp(1,2) = 1;
     RHS(1) = 2*wall_temp;
+    
+    % solve:
     T_new = A_temp\RHS;
 
 

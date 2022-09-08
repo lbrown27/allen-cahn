@@ -1,4 +1,4 @@
-function c_next = c_step_fe(c, T,u,c_past,eta, eta_old,rho, pc)
+function c_next = c_step_fe(c, T,u,eta, rho, pc)
 % Steps the phase field variable forward in time.
 rhs_cn = rhs_ac(c,T,u,eta,rho,pc);
 c_next = rhs_cn * pc.dt + c;

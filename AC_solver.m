@@ -10,12 +10,8 @@ clc;
 
 %% Define physical constants
 pc = init_diml();
-x_coll = -pc.dx / 2:pc.dx:pc.l + pc.dx / 2;
-x_stag = 0:pc.dx:pc.l + pc.dx;
-
-x_coll = transpose(x_coll);
-x_stag = transpose(x_stag);
-
+x_coll = transpose(-pc.dx / 2:pc.dx:pc.l + pc.dx / 2);
+x_stag = transpose(0:pc.dx:pc.l + pc.dx);
 
 % initialize the velocity and the phase fields:
 u_n = zeros(pc.N+2,1);
@@ -25,18 +21,20 @@ u_n(pc.N + 2 ) = u_n(pc.N + 1);
 u_old = zeros(pc.N+2,1); % store the old velocity
 
 
-c_n = ones(pc.N + 2,1) * 0;
+c_n = zeros(pc.N + 2,1);
+
+% Add these two lines if you want the profile to start with a diffuse htan
+% profile.
+
+%c_n_experimental = c_init(c_n,x_coll,pc);
+%c_n = c_n_experimental;
+
+% Set boundary conditions
 c_n(pc.N + 2) = c_n(pc.N + 1);
-c_n_experimental = c_init(c_n,x_coll,pc);
-c_n = c_n_experimental; % ADDED THIS LINE, ITS EXPERIMENTAL!
 c_n(1) = -2 - c_n(2);
-c_old = c_n;
-
-% set the BC that the wall is ice.
-
 
 % Initialize the temperature field and set the wall temperature.
-% First cell is ice.
+% Also set the wall temp at i = 1/2
 T_init = 273.15 + .02;
 T_n = T_init*ones(pc.N+ 2,1);
 wall_temp = -5 +273.15;
@@ -46,6 +44,7 @@ T_n(1) = 2 * wall_temp - T_n(2); % wall temperature
 % variable
 rho_n = (c_n+1)*pc.rho_water - c_n * pc.rho_ice;
 rho_old = rho_n; % due to initial condition, this is the same
+
 mass_orig = sum(rho_n(2:pc.N + 1))*pc.dx;
 
 eta_n = (c_n+1)*pc.eta_water - c_n * pc.eta_ice;
@@ -53,33 +52,31 @@ eta_old = eta_n;
 eta_new = eta_n;
 k_n = (c_n+1)*pc.k_water - c_n * pc.k_ice;
 
-% initially, the pressure field is 0 because there are no pressure
-% gradients in the initial field and we know the outflow BC is P = 0.
-P = zeros(pc.N + 2,1);
-P(1) = P(2);
-P(pc.N + 2) = 0 - P(pc.N + 1);
 
+%% User input information:
 num_iterations = 1200000;
-print_interval = 50000;
+print_interval = 500;
+new_timestep = 10^-5;
+
+
 physical_time = 0;
-refinement_factor = 1;
+
 % error_max keeps track of largest discrepancy between the explicit and
 % implicit solving method for u*.
 %error_max = 0;
 
-% generate the matrix once that matrix_solve needs for pressure
+% generate the matrix that matrix_solve needs for pressure
 A_pres = gallery('tridiag', pc.N+2, 1,-2,1);
 A_pres(1,1) = -1;
 A_pres(end,end) = 1;
 A_pres(end,end-1) = 0;
 
 count = 0;
-trigger = 0;
 imcount = 0;
+violates_bounds_count = 0;
 f= figure(1);
 
 %for count = 1:num_iterations
-violates_bounds_count = 0;
 %while physical_time < 20
 while find_interface_loc(c_n, x_coll,pc) < pc.l
     %% Step 1: Calculate c at time n + 1 using the Allen-Cahn equation.
@@ -88,10 +85,11 @@ while find_interface_loc(c_n, x_coll,pc) < pc.l
     if count > 1
         c_new = c_step(c_n, T_n,u_n,c_old,eta_new, eta_old,rho_n, pc);
     else
-        c_new = c_step_fe(c_n, T_n,u_n,c_old,eta_new, eta_old,rho_n, pc);
+        c_new = c_step_fe(c_n, T_n,u_n,eta_new,rho_n, pc);
     end
-    c_diff = c_new - c_n;
-    [t_a, t_d, t_f] = calculate_timescales(pc, u_n,rho_n);
+    
+    %c_diff = c_new - c_n;
+    %[t_a, t_d, t_f] = calculate_timescales(pc, u_n,rho_n);
     %% Step 2: Obtain density, thermal conductivity, and viscosity at time n+1:
     
     rho_new = (c_new+1)*pc.rho_water - c_new * pc.rho_ice; %this is a new value since calculated with c new.
@@ -103,36 +101,31 @@ while find_interface_loc(c_n, x_coll,pc) < pc.l
     %% Step 3: Find the approximate velocity u* at time step n+1 using the momentum equation SANS pressure term.
     
     %u_star = explicit_solve(rho_n, rho_new, eta_n, pc, c_n, u_n,rho_old,eta_old, c_old,u_old);
-    imp_u_star = backward_euler_momentum_solve(rho_new, eta_new, pc,u_n,rho_n, eta_n, c_n, c_new); % NEEDS to be tested to see if BC's work!
-    u_star = imp_u_star; % this line switches the code from explicit to implicit!
-    %diff_exp_imp = u_star - imp_u_star;
+    u_star = backward_euler_momentum_solve(rho_new, eta_new, pc,u_n,rho_n, eta_n, c_n, c_new);
+
     %% Step 4: Calculate the pressure field by solving a poisson equation
     RHS_Pres = RHS_PE(rho_new,pc,u_n,c_new, T_n,eta_new, u_star,rho_n,rho_old);
-    P_new = matrix_solve(P,RHS_Pres,pc,A_pres);
+    P_new = matrix_solve(RHS_Pres,pc,A_pres);
     
     %% Step 5: Correct velocity to satisfy continuity equation, given the pressure field
     pressure_g = pressure_grad(P_new,pc);
-    u_new = u_star - pc.dt * pressure_g ./ rho_new_flux; % need to multiply by 2/3 here if using explicit.
+    u_new = u_star - pc.dt * pressure_g ./ rho_new_flux; % need to multiply by 2/3 here if using explicit for u_star
     u_new(1) = 0;
     u_new(pc.N + 2) = u_new(pc.N + 1);
-    %u_new(pc.N) = u_new(pc.N - 1);
     %% Step 6: Solve the energy equation
-    T_new = solve_temp_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,pc);    
+    T_new = solve_temp_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,T_n, c_new,eta_new,rho_new,wall_temp,pc);
     %% Step 7: correct the ice velocity to zero:
     %u_new_before_correction = u_new;
-    %u_new_before_correction = u_new;
-    %u_new = u_new .* (1 + c_new).* pc.rho_water ./ ((1 + c_new) .* pc.rho_water - c_new .* pc.rho_ice);
+    u_new = u_new .* (1 + c_new).* pc.rho_water ./ ((1 + c_new) .* pc.rho_water - c_new .* pc.rho_ice);
     %u_diff = u_new - u_new_before_correction;
     
     %% Step 8: Determine next time step size
-    t_v = .5 * pc.dx ^ 2 *pc.rho_ice/ max(eta_new)*10;
+    t_v = .5 * pc.dx ^ 2 *pc.rho_ice/ max(eta_new);
     t_c = pc.dx / max(abs(u_new));
     t_s = .5 * sqrt(pc.rho_water / pc.sigma_c * pc.dx^3);
-    %t_visc_jump = pc.dx ^ 2 * (rho_ice + rho_water) * .5 /(eta_ice - eta_water);
     TIME = [t_v,t_c,t_s];
     % calculate the next time step based off solver info
-    new_timestep =  .5* min(TIME)/refinement_factor;
-    new_timestep = 10^-5;
+    %new_timestep =  .5* min(TIME);
     %% Step 9: Set up solver for next loop.
     %percent_lost = mass_counter(rho_new, rho_n, pc, c_new, c_n,mass_orig, x_coll);
     
@@ -149,12 +142,9 @@ while find_interface_loc(c_n, x_coll,pc) < pc.l
     u_n = u_new;
     
     physical_time = physical_time + pc.dt;
-    %new_timestep = 10^-7;
     pc.dt = new_timestep;
-    %fprintf("%d \n", count);
     count = count + 1;
     
-    %if ((count < print_interval) && (mod(count,print_interval) == 0)) || ((count > print_interval)&& (mod(count,10) == 0))
     if (mod(count,print_interval) == 0)
         fprintf("Time step: %d \n Iteration: %d \n",new_timestep,count);
         fprintf("Physical time: %d \n",physical_time);
@@ -230,7 +220,7 @@ end
 figure(1);
 n_plots = 4;
 subplot(n_plots,1,1);
-plot(x_coll,c_new); % plot phase field after one step
+plot(x_coll,c_new);
 title("phase field");
 xlim([x_coll(1), x_stag(end)])
 ylim([-1 0])
