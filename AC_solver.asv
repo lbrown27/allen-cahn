@@ -13,50 +13,19 @@ pc = init_diml();
 x_coll = transpose(-pc.dx / 2:pc.dx:pc.l + pc.dx / 2);
 x_stag = transpose(0:pc.dx:pc.l + pc.dx);
 
-% initialize the velocity and the phase fields:
-u_n = zeros(pc.N+2,1);
-u_n(1) = 0;
-u_n(pc.N + 2 ) = u_n(pc.N + 1);
-
-u_old = zeros(pc.N+2,1); % store the old velocity
-
-
-c_n = zeros(pc.N + 2,1);
-
-% Add these two lines if you want the profile to start with a diffuse htan
-% profile.
-
-%c_n_experimental = c_init(c_n,x_coll,pc);
-%c_n = c_n_experimental;
-
-% Set boundary conditions
-c_n(pc.N + 2) = c_n(pc.N + 1);
-c_n(1) = -2 - c_n(2);
-
-% Initialize the temperature field and set the wall temperature.
-% Also set the wall temp at i = 1/2
-T_init = 273.15 + .02;
-T_n = T_init*ones(pc.N+ 2,1);
-wall_temp = -5 +273.15;
-T_n(1) = 2 * wall_temp - T_n(2); % wall temperature
-
-% calculate the initial density in the domain based off phase field
-% variable
-rho_n = (c_n+1)*pc.rho_water - c_n * pc.rho_ice;
-rho_old = rho_n; % due to initial condition, this is the same
-
-mass_orig = sum(rho_n(2:pc.N + 1))*pc.dx;
-
-eta_n = (c_n+1)*pc.eta_water - c_n * pc.eta_ice;
-eta_old = eta_n;
-eta_new = eta_n;
-k_n = (c_n+1)*pc.k_water - c_n * pc.k_ice;
-
-
 %% User input information:
-num_iterations = 1200000;
+num_iterations = 1;
 print_interval = 500;
 new_timestep = 10^-5;
+wall_temp = 273.15 - 5;
+temp_init = 273.15 + .02;
+%% Initialize field
+
+[c_n,T_n,u_n,rho_n,eta_n,k_n,rho_old] = initialize_fields(pc,wall_temp, temp_init);
+
+
+
+mass_orig = sum(rho_n(2:pc.N + 1))*pc.dx;
 
 
 physical_time = 0;
@@ -76,28 +45,27 @@ imcount = 0;
 violates_bounds_count = 0;
 f= figure(1);
 
-%for count = 1:num_iterations
+for count = 1:num_iterations
 %while physical_time < 20
-while find_interface_loc(c_n, x_coll,pc) < pc.l
+%while find_interface_loc(c_n, x_coll,pc) < pc.l
     %% Step 1: Calculate c at time n + 1 using the Allen-Cahn equation.
     % copy old phase field to storage
     
     if count > 1
         c_new = c_step(c_n, T_n,u_n,c_old,eta_new, eta_old,rho_n, pc);
     else
-        c_new = c_step_fe(c_n, T_n,u_n,eta_new,rho_n, pc);
+        c_new = c_step_fe(c_n, T_n,u_n,eta_n,rho_n, pc);
     end
     
-    %c_diff = c_new - c_n;
     %[t_a, t_d, t_f] = calculate_timescales(pc, u_n,rho_n);
     %% Step 2: Obtain density, thermal conductivity, and viscosity at time n+1:
     
-    rho_new = (c_new+1)*pc.rho_water - c_new * pc.rho_ice; %this is a new value since calculated with c new.
+    rho_new = c_new*pc.rho_water +(1 - c_new) * pc.rho_ice; %this is a new value since calculated with c new.
     rho_new_flux = rho_flux(rho_new,pc);
-    eta_new = (c_new+1)*pc.eta_water - c_new * pc.eta_ice;
-    k_new = (c_new+1)*pc.k_water - c_new * pc.k_ice;
-    rho_cp_n = pc.rho_water * pc.cp_water * (1 + c_n) + pc.rho_ice * pc.cp_ice * (- c_n);
-    rho_cp_new = pc.rho_water * pc.cp_water * (1 + c_new) + pc.rho_ice * pc.cp_ice * (- c_new);
+    eta_new = c_new*pc.eta_water + (1 - c_new) * pc.eta_ice;
+    k_new = c_new*pc.k_water +(1 - c_new) * pc.k_ice;
+    rho_cp_n = pc.rho_water * pc.cp_water * c_n + pc.rho_ice * pc.cp_ice * (1 - c_n);
+    rho_cp_new = pc.rho_water * pc.cp_water * c_new + pc.rho_ice * pc.cp_ice * (1 - c_new);
     %% Step 3: Find the approximate velocity u* at time step n+1 using the momentum equation SANS pressure term.
     
     %u_star = explicit_solve(rho_n, rho_new, eta_n, pc, c_n, u_n,rho_old,eta_old, c_old,u_old);
@@ -112,12 +80,11 @@ while find_interface_loc(c_n, x_coll,pc) < pc.l
     u_new = u_star - pc.dt * pressure_g ./ rho_new_flux; % need to multiply by 2/3 here if using explicit for u_star
     u_new(1) = 0;
     u_new(pc.N + 2) = u_new(pc.N + 1);
-    %u_new(pc.N) = u_new(pc.N - 1);
     %% Step 6: Solve the energy equation
     T_new = solve_temp_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,T_n, c_new,eta_new,rho_new,wall_temp,pc);
     %% Step 7: correct the ice velocity to zero:
     %u_new_before_correction = u_new;
-    u_new = u_new .* (1 + c_new).* pc.rho_water ./ ((1 + c_new) .* pc.rho_water - c_new .* pc.rho_ice);
+    u_new = u_new .* (c_new).* pc.rho_water ./ (c_new .* pc.rho_water - (1 - c_new - 1) .* pc.rho_ice);
     %u_diff = u_new - u_new_before_correction;
     
     %% Step 8: Determine next time step size
@@ -155,13 +122,13 @@ while find_interface_loc(c_n, x_coll,pc) < pc.l
         plot(x_coll,c_new); % plot phase field after one step
         title("phase field");
         xlim([x_coll(1), x_stag(end)])
-        ylim([-1 0])
+        ylim([0 1])
         
         subplot(n_plots,1,2);
         plot(x_coll,T_new);
         title('Temp');
         xlim([x_coll(1), x_stag(end)])
-        ylim([wall_temp - 2 T_init])
+        ylim([wall_temp - 2 temp_init])
         
         subplot(n_plots,1,3);
         plot(x_stag,u_new);
@@ -221,16 +188,16 @@ end
 figure(1);
 n_plots = 4;
 subplot(n_plots,1,1);
-plot(x_coll,c_new); % plot phase field after one step
+plot(x_coll,c_new);
 title("phase field");
 xlim([x_coll(1), x_stag(end)])
-ylim([-1 0])
+ylim([0 1])
 
 subplot(n_plots,1,2);
 plot(x_coll,T_new);
 title('Temp');
 xlim([x_coll(1), x_stag(end)])
-ylim([wall_temp - 2 T_init])
+ylim([wall_temp - 2 temp_init])
 
 subplot(n_plots,1,3);
 plot(x_stag,u_new);
