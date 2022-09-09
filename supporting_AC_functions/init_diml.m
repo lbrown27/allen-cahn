@@ -1,9 +1,9 @@
 function pc = init_diml()
 %% Initializes constants of the problem according to the first test case.
-N = 100;
-l = .0005;
+N = 15;
+l = .00015;
 dx = l / (N);
-Mc = 1*10^-5;
+Mc = 1*10^-3;
 sigma_c = .0317;
 conversion_smallness_factor = 2.64*10^-4 / (4 * 10^-3);
 ksi_c = l * conversion_smallness_factor;
@@ -32,7 +32,7 @@ pc.k_water = 0.5918;
 pc.k_ice = 2.25; %change
 
 pc.rho_water = 998;
-pc.rho_ice = 898; % change!
+pc.rho_ice = 998; % change!
 
 pc.cp_water = 4200;
 pc.cp_ice = 2018;% change!

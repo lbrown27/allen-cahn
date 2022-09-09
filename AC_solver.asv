@@ -15,7 +15,7 @@ x_stag = transpose(0:pc.dx:pc.l + pc.dx);
 
 %% User input information:
 num_iterations = 2500000;
-print_interval = 5000;
+print_interval = 1000;
 new_timestep = 10^-5;
 wall_temp = 273.15 - 5;
 temp_init = 273.15 + .02;
@@ -42,8 +42,6 @@ A_pres(end,end-1) = 0;
 count = 0;
 imcount = 0;
 violates_bounds_count = 0;
-t_vec = 0;
-loc_vec = 0;
 f= figure(1);
 
 for count = 1:num_iterations
@@ -111,11 +109,7 @@ for count = 1:num_iterations
     u_n = u_new;
     
     physical_time = physical_time + pc.dt;
-    %pc.dt = new_timestep;
-    
-    t_vec = [t_vec,physical_time];
-    loc_vec = [loc_vec,find_interface_loc(c_n, x_coll,pc)];
-    
+    pc.dt = new_timestep;
     count = count + 1;
     
     if (mod(count,print_interval) == 0)
@@ -139,22 +133,22 @@ for count = 1:num_iterations
         plot(x_stag,u_new);
         title("velocity");
         xlim([x_coll(1), x_stag(end)])
-        %ylim([0 1e-4])
+        ylim([0 1e-3])
         
         subplot(n_plots,1,4);
         plot(x_coll,P_new);
         title('Pressure');
         xlim([x_coll(1), x_stag(end)])
-        %ylim([-1 10])
+        ylim([-1 10])
         
         
-        subplot(n_plots,1,5);
-        plot(t_vec,loc_vec);
-        %hold on;
-        %plot(t_vec, int_locs_ana);
-        title('Interface Location');
-        %xlim([x_coll(1), x_stag(end)])
-        %ylim([0 pc.l])
+        subplot(n_plots,1,4);
+        plot(t_vec,int_locs);
+        hold on;
+        plot(t_vec, int_locs_ana);
+        title('Pressure');
+        xlim([x_coll(1), x_stag(end)])
+        ylim([-1 10])
         %       subplot(n_plots,1,5);
         %         plot(x_stag,u_star);
         %         title('U Star');
