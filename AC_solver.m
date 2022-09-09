@@ -15,13 +15,14 @@ x_stag = transpose(0:pc.dx:pc.l + pc.dx);
 
 %% User input information:
 num_iterations = 2500000;
-print_interval = 5000;
+print_interval = 500;
 new_timestep = 10^-5;
+pc.dt = new_timestep;
 wall_temp = 273.15 - 5;
-temp_init = 273.15 + .02;
+temp_init = 273.15 + .2;
 %% Initialize field
 
-[c_n,T_n,u_n,rho_n,eta_n,k_n,rho_old] = initialize_fields(pc,wall_temp, temp_init);
+[c_n,T_n,u_n,rho_n,eta_n,k_n,rho_old] = initialize_fields(pc,wall_temp, temp_init,x_coll);
 
 
 mass_orig = sum(rho_n(2:pc.N + 1))*pc.dx;
@@ -85,7 +86,7 @@ for count = 1:num_iterations
     T_new = solve_temp_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,T_n, c_new,eta_new,rho_new,wall_temp,pc);
     %% Step 7: correct the ice velocity to zero:
     %u_new_before_correction = u_new;
-    u_new = u_new .* (c_new).* pc.rho_water ./ (c_new .* pc.rho_water + (1 - c_new) .* pc.rho_ice);
+    %u_new = u_new .* (c_new).* pc.rho_water ./ (c_new .* pc.rho_water + (1 - c_new) .* pc.rho_ice);
     %u_diff = u_new - u_new_before_correction;
     
     %% Step 8: Determine next time step size
