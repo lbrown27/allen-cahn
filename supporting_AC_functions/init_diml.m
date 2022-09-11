@@ -1,13 +1,14 @@
 function pc = init_diml()
 %% Initializes constants of the problem according to the first test case.
 N = 100;
-l = .0005;
+l = .001;
 dx = l / (N);
-Mc = 1*10^-5;
+Mc = 1*10^-3;
 sigma_c = .0317;
 conversion_smallness_factor = 2.64*10^-4 / (4 * 10^-3);
-ksi_c = l * conversion_smallness_factor;
-%ksi_c = 26.4 * dx;
+%ksi_c = l * conversion_smallness_factor;
+%ksi_c = 26.4 * dx;% from paper
+ksi_c = 1 * dx;
 T_M = 273.15;
 L = 334000; %latent heat of freezing
 dt = 10^-9;
@@ -28,8 +29,8 @@ pc.dt = dt;
 pc.eta_water = 1e-3;
 pc.eta_ice = 100;
 
-pc.k_water = 0.5918;
-pc.k_ice = 2.25; %change
+pc.k_water = 0.005918;
+pc.k_ice = .0225; %change
 
 pc.rho_water = 998;
 pc.rho_ice = 998; % change!

@@ -11,7 +11,7 @@ c_n = ones(pc.N + 2,1);
 % profile.
 
 c_n_experimental = c_init(c_n,x_coll,pc);
-%c_n = c_n_experimental;
+c_n = c_n_experimental;
 
 % Set boundary conditions
 c_n(pc.N + 2) = c_n(pc.N + 1);
@@ -20,7 +20,7 @@ c_n(1) = - c_n(2);
 % Initialize the temperature field and set the wall temperature.
 % Also set the wall temp at i = 1/2
 T_n =ones(pc.N + 2,1).*( wall_temp.*(x_coll < pc.l/2) + (x_coll>=pc.l/2).* temp_init);
-T_n = ones(pc.N + 2,1)*temp_init;
+%T_n = ones(pc.N + 2,1)*temp_init;
 T_n(1) = 2 * wall_temp - T_n(2); % wall temperature
 
 % calculate the initial density in the domain based off phase field

@@ -2,7 +2,13 @@ function f = rhs_ac(c,T,u,eta,rho, pc)
 %% returns a vector which is the rhs in the allen-cahn equation
 % discretizaition. Valid for all points except the boundary points (1 and N+2)
 f = zeros(pc.N + 2,1);
-fc_deriv = dfc_dc(c, pc, T,rho);
+
+%% Calculate the free energy derivative
+A = 3 .* pc.sigma_c ./(pc.ksi_c) .* (4.*c.^3 - 6.*c.^2 + 2.*c); % HILL TERM W/ g'(c)
+B =  rho .* pc.L .* ((pc.T_M - T)./pc.T_M).*(30 .*(c-1).^2.*c.^2); % LATENT HEAT TERM W/ h'(c)
+
+fc_deriv = A + B;
+%fc_deriv = dfc_dc(c, pc, T,rho);
 for i = 2:pc.N + 1
     i_plus = i;
     i_minus = i - 1;
