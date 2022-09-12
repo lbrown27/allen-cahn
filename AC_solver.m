@@ -16,8 +16,8 @@ x_stag = transpose(0:pc.dx:pc.l + pc.dx);
 
 %% User input information:
 num_iterations = 1000000;
-print_interval = 1000;
-new_timestep =1*10^-10;
+print_interval = 100;
+new_timestep =1*10^-7;
 pc.dt = new_timestep;
 
 % vel_on will tell the code whether to couple the NS equations with the
@@ -99,8 +99,8 @@ while physical_time < 7e-3
         P_new = zeros(pc.N + 2,1);
     end
     %% Step 6: Solve the energy equation
-    T_new = solve_temp_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,T_n, c_new,eta_new,rho_new,pc.wall_T,pc);
-    %T_new = solve_temp_full_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,T_n,c_new, eta_new,rho_new,c_n,eta_n,rho_n,pc);
+    %T_new = solve_temp_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,T_n, c_new,eta_new,rho_new,pc.wall_T,pc);
+    T_new = solve_temp_full_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,T_n,c_new, eta_new,rho_new,c_n,eta_n,rho_n,pc);
     %% Step 7: correct the ice velocity to zero:
     %u_new_before_correction = u_new;
     u_new = u_new .* (c_new).* pc.rho_water ./ (c_new .* pc.rho_water + (1 - c_new) .* pc.rho_ice);
