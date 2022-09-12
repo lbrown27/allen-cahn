@@ -20,7 +20,7 @@ c_n(1) = - c_n(2);
 % Initialize the temperature field and set the wall temperature.
 % Also set the wall temp at i = 1/2
 T_n =ones(pc.N + 2,1).*( pc.wall_T.*(x_coll < pc.l/2) + (x_coll>=pc.l/2).* pc.init_T);
-T_n = T_init(T_n,x_coll,pc)
+T_n = T_init(T_n,x_coll,pc);
 %T_n = ones(pc.N + 2,1)*pc.init_T;
 T_n(1) = 2 * pc.wall_T - T_n(2); % wall temperature
 
