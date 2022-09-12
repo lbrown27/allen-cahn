@@ -6,7 +6,7 @@ function T_new = solve_temp_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,T_n,c_n
     % Crank nicolson
     A_temp = sparse(diag(rho_cp_new) - .5 * pc.dt * E_new);
     B = (.5 * pc.dt * E_n) * T_n;
-    C = -rhs_ac(c_new,T_n,u_new,eta_new,rho_new, pc) * pc.dt * pc.rho_water * pc.L;% .* (T_n < 273.15); % IS THIS LINE GOOD?
+    C = -rhs_ac_arezoo(c_new,T_n,u_new,eta_new,rho_new, pc) * pc.dt * pc.rho_water * pc.L;% .* (T_n < 273.15); % IS THIS LINE GOOD?
     D = rho_cp_n .* T_n;
     F = zeros(pc.N + 2,1);
     for i = 2: pc.N + 1

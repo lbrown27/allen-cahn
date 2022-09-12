@@ -1,5 +1,5 @@
 clear all;
-close all;
+%close all;
 clc;
 addpath('supporting_AC_functions')
 addpath('stefan_solver')
@@ -10,26 +10,27 @@ addpath('stefan_solver')
 
 
 %% Define physical constants
-pc = init_diml();
+pc = init_stefan_arezoo();
 x_coll = transpose(-pc.dx / 2:pc.dx:pc.l + pc.dx / 2);
 x_stag = transpose(0:pc.dx:pc.l + pc.dx);
 
 %% User input information:
-num_iterations = 2500000;
-print_interval = 10000;
-new_timestep = 10^-7;
+num_iterations = 1000000;
+print_interval = 1000;
+new_timestep =1*10^-7;
 pc.dt = new_timestep;
-wall_temp = 273.15-5;
-temp_init = 273.15+.2;
+
+% vel_on will tell the code whether to couple the NS equations with the
+% flow.
+vel_on = 0;
 %% Initialize field
 
-[c_n,T_n,u_n,rho_n,eta_n,k_n,rho_old] = initialize_fields(pc,wall_temp, temp_init,x_coll);
-
-alpha = find_alpha_fast(pc.k_water, pc.k_ice,pc.L,temp_init,wall_temp, pc.rho_water, pc.cp_water)
-mass_orig = sum(rho_n(2:pc.N + 1))*pc.dx;
-
-
+[c_n,T_n,u_n,rho_n,eta_n,k_n,rho_old] = initialize_fields(pc,x_coll);
 physical_time = 0;
+
+alpha = find_alpha_fast(pc.k_water, pc.k_ice,pc.L,pc.init_T,pc.wall_T, pc.rho_water, pc.cp_water,pc.T_M);
+
+mass_orig = sum(rho_n(2:pc.N + 1))*pc.dx;
 
 % error_max keeps track of largest discrepancy between the explicit and
 % implicit solving method for u*.
@@ -44,33 +45,32 @@ A_pres(end,end-1) = 0;
 count = 0;
 imcount = 0;
 violates_bounds_count = 0;
+
+% Initialize interface location vector
 t_vec = 0;
 loc_vec = find_interface_loc(c_n, x_coll,pc);
 loc_ana = loc_vec;
-f= figure(1);
-vel_on = 0;
-c_diff_count = 0;
-%for count = 1:num_iterations
+%f= figure(1);
 
-%% RESTART WHERE LEFT OFF.
-while physical_time < 20
+
+
+
+%% RUN THIS SECTION ONLY TO RESTART WHERE THE SIMULATION LEFT OFF.
+%for count = 1:num_iterations
+while physical_time < 7e-3
     %while find_interface_loc(c_n, x_coll,pc) < pc.l
+    
+    
     %% Step 1: Calculate c at time n + 1 using the Allen-Cahn equation.
     % copy old phase field to storage
     
+    % uses forward euler for the first time step.
     if count > 1
         c_new = c_step(c_n, T_n,u_n,c_old,eta_new, eta_old,rho_n, pc);
     else
         c_new = c_step_fe(c_n, T_n,u_n,eta_n,rho_n, pc);
     end
-    c_diff = c_new - c_n;
-    for i = 2:pc.N+1
-        if c_diff(i) ~= 0
-            c_diff_count = c_diff_count + 1;
-        end
-    end
     
-    %[t_a, t_d, t_f] = calculate_timescales(pc, u_n,rho_n);
     %% Step 2: Obtain density, thermal conductivity, and viscosity at time n+1:
     
     rho_new = c_new*pc.rho_water +(1 - c_new) * pc.rho_ice; %this is a new value since calculated with c new.
@@ -99,17 +99,17 @@ while physical_time < 20
         P_new = zeros(pc.N + 2,1);
     end
     %% Step 6: Solve the energy equation
-    T_new = solve_temp_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,T_n, c_new,eta_new,rho_new,wall_temp,pc);
+    T_new = solve_temp_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,T_n, c_new,eta_new,rho_new,pc.wall_T,pc);
     %% Step 7: correct the ice velocity to zero:
     %u_new_before_correction = u_new;
-    %u_new = u_new .* (c_new).* pc.rho_water ./ (c_new .* pc.rho_water + (1 - c_new) .* pc.rho_ice);
+    u_new = u_new .* (c_new).* pc.rho_water ./ (c_new .* pc.rho_water + (1 - c_new) .* pc.rho_ice);
     %u_diff = u_new - u_new_before_correction;
     
     %% Step 8: Determine next time step size
-    t_v = .5 * pc.dx ^ 2 *pc.rho_ice/ max(eta_new);
-    t_c = pc.dx / max(abs(u_new));
-    t_s = .5 * sqrt(pc.rho_water / pc.sigma_c * pc.dx^3);
-    TIME = [t_v,t_c,t_s];
+    %     t_v = .5 * pc.dx ^ 2 *pc.rho_ice/ max(eta_new);
+    %     t_c = pc.dx / max(abs(u_new));
+    %     t_s = .5 * sqrt(pc.rho_water / pc.sigma_c * pc.dx^3);
+    %     TIME = [t_v,t_c,t_s];
     % calculate the next time step based off solver info
     %new_timestep =  .5* min(TIME);
     %% Step 9: Set up solver for next loop.
@@ -130,10 +130,24 @@ while physical_time < 20
     physical_time = physical_time + pc.dt;
     %pc.dt = new_timestep;
     
+    % updates the vectors storing interface location for numerical and
+    % analytical solutions.
     t_vec = [t_vec,physical_time];
     loc_vec = [loc_vec,find_interface_loc(c_n, x_coll,pc)];
     loc_ana = [loc_ana,interface_location(loc_vec(1), alpha,physical_time,pc.l)];
+    
+    % increment the iteration counter
     count = count + 1;
+    
+    %% Analytics
+    
+    % calculates the timescales associated with terms in the AC equation:
+    %[t_a, t_d, t_f] = calculate_timescales(pc, u_n,rho_n);
+    % alpha_num = mean((loc_vec - loc_vec(1))/(loc_ana - loc_vec(1)))*alpha
+    
+    % magic = calculate_residual(c_new,T_new,u_new,eta_new,rho_new, pc);  
+    % max(magic)
+    %% Print
     
     if (mod(count,print_interval) == 0)
         fprintf("Time step: %d \n Iteration: %d \n",new_timestep,count);
@@ -153,7 +167,7 @@ while physical_time < 20
         plot(x_coll,T_new);
         title('Temp');
         xlim([x_coll(1), x_stag(end)])
-        ylim([wall_temp - 2 temp_init])
+        ylim([pc.wall_T - 2 pc.init_T])
         plot_count = plot_count + 1;
         
         
@@ -175,8 +189,7 @@ while physical_time < 20
         plot(t_vec,loc_vec);
         hold on;
         plot(t_vec, loc_ana);
-        %         hold off;
-        %         alpha_num = mean((loc_vec - loc_vec(1))/(loc_ana - loc_vec(1)))*alpha
+        hold off;
         legend('num','ana');
         title('Interface Location');
         %
@@ -204,9 +217,7 @@ while physical_time < 20
         %         title('c diff');
         %         xlim([x_coll(1), x_stag(end)])
         %max(abs(u_diff))
-        %magic = calculate_residual(c_new,T_new,u_new,eta_new,rho_new, pc);
-        
-        %max(magic)
+
         
         
         
@@ -216,6 +227,8 @@ while physical_time < 20
         %         xlim([x_coll(1), x_stag(end)])
         drawnow();
         fprintf("graphs updated. \n");
+        
+        %% Export graphics and data
         %imcount = imcount + 1;
         %exportgraphics(f,['Img\img_' num2str(imcount) '.png'],'Resolution',300);
         %save('locs.mat','loc_vec');

@@ -8,8 +8,9 @@ g_prime = (4.*c.^3 - 6.*c.^2 + 2.*c);
 h_prime = (c ==1) .* (T<=pc.T_M) + (c == 0).*(T>=pc.T_M);
 h_prime = h_prime + (h_prime == 0).*(30 .*(c-1).^2.*c.^2);
 
-A = 3 .* pc.sigma_c ./(pc.ksi_c) .* g_prime; % HILL TERM W/ g'(c)
-B =  rho .* pc.L .* ((pc.T_M - T)./pc.T_M).*h_prime; % LATENT HEAT TERM W/ h'(c)
+%A = 3 .* pc.sigma_c ./(pc.ksi_c) .* g_prime; % HILL TERM W/ g'(c)
+A = -pc.Mc *pc.lambda /pc.ksi_c^2 * g_prime;
+B =  -pc.Mc * rho .* pc.L .* ((pc.T_M - T)./pc.T_M).*h_prime; % LATENT HEAT TERM W/ h'(c)
 
 fc_deriv = A + B;
 %fc_deriv = dfc_dc(c, pc, T,rho);
@@ -17,14 +18,15 @@ for i = 2:pc.N + 1
     i_plus = i;
     i_minus = i - 1;
     Advection = -(u(i_plus)*(c(i+1) + c(i)) - u(i_minus) * (c(i) + c(i - 1)))/(2*pc.dx); % ADVECTION TERM
-    B = pc.Mc * 6 * pc.sigma_c * pc.ksi_c *(c(i+1) - 2 * c(i) + c(i-1))/pc.dx^2; % DIFFUSION-LIKE TERM
+    laplacian_c = (c(i+1) - 2 * c(i) + c(i-1))/pc.dx^2;
+    B = pc.Mc * pc.lambda* laplacian_c; % DIFFUSION-LIKE TERM
     
-    C = -1*pc.Mc*fc_deriv(i); % FREE ENERGY DERIVATIVE
+    %C = -1*pc.Mc*fc_deriv(i); % FREE ENERGY DERIVATIVE
     D = (u(i_plus) - u(i_minus))/pc.dx * c(i);
     %B = 0;
     %B = pc.Mc * 6 * pc.ksi_c^2 *(c(i+1) - 2 * c(i) + c(i-1))/pc.dx^2; % DIFFUSION-LIKE TERM, CHANGED!
 
-    f(i) = Advection+B+ C + D;
+    f(i) = Advection+B+ fc_deriv(i)+ D;
     
 end
 end

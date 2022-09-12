@@ -1,4 +1,4 @@
-function [c_n,T_n,u_n,rho_n,eta_n,k_n,rho_old] = initialize_fields(pc,wall_temp, temp_init,x_coll)
+function [c_n,T_n,u_n,rho_n,eta_n,k_n,rho_old] = initialize_fields(pc, x_coll)
 
 % initialize the velocity and the phase fields:
 u_n = zeros(pc.N+2,1);
@@ -19,9 +19,10 @@ c_n(1) = - c_n(2);
 
 % Initialize the temperature field and set the wall temperature.
 % Also set the wall temp at i = 1/2
-T_n =ones(pc.N + 2,1).*( wall_temp.*(x_coll < pc.l/2) + (x_coll>=pc.l/2).* temp_init);
-%T_n = ones(pc.N + 2,1)*temp_init;
-T_n(1) = 2 * wall_temp - T_n(2); % wall temperature
+T_n =ones(pc.N + 2,1).*( pc.wall_T.*(x_coll < pc.l/2) + (x_coll>=pc.l/2).* pc.init_T);
+T_n = T_init(T_n,x_coll,pc)
+%T_n = ones(pc.N + 2,1)*pc.init_T;
+T_n(1) = 2 * pc.wall_T - T_n(2); % wall temperature
 
 % calculate the initial density in the domain based off phase field
 % variable

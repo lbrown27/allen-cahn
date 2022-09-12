@@ -14,7 +14,6 @@ L = 334000; %latent heat of freezing
 dt = 10^-9;
 pc.thickness_num_pts = ksi_c / dx;
 fprintf("Thickness is %f points wide (aim for at least 20!)\n",pc.thickness_num_pts);
-pc.extra_factor = 1;
 
 pc.N = N;
 pc.l = l;
@@ -25,7 +24,7 @@ pc.ksi_c = ksi_c;
 pc.T_M = T_M;
 pc.L = L;
 pc.dt = dt;
-
+pc.gamma = 1.3 * 10^-3; %% MIGHT NEED TO TUNE THIS!
 pc.eta_water = 1e-3;
 pc.eta_ice = 100;
 
@@ -37,4 +36,6 @@ pc.rho_ice = 998; % change!
 
 pc.cp_water = 4200;
 pc.cp_ice = 2018;% change!
+
+pc.lambda = 3 * sqrt(2) * pc.rho_water*pc.L*pc.gamma *pc.ksi_c/pc.T_M;
 end
