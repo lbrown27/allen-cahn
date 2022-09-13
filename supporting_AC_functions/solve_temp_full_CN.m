@@ -5,8 +5,7 @@ function T_new = solve_temp_full_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,T_
     
     % Crank nicolson
     % next line technically splits method but i think effect is small.
-    h_prime = (c_new ==1) .* (T_n<=pc.T_M) + (c_new == 0).*(T_n>=pc.T_M);
-h_prime = h_prime + (h_prime == 0).*(30 .*(c_new-1).^2.*c_new.^2);
+    h_prime = h_prime_func(c_new,T_n,pc.T_M);
 
     A_temp = sparse(diag(rho_cp_new) - .5 * pc.dt * E_new+.5*diag(pc.Mc*pc.L^2*pc.rho_water^2*h_prime*pc.dt/pc.T_M));
    % A_temp = sparse(diag(rho_cp_new) - .5 * pc.dt * E_new);

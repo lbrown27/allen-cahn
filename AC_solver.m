@@ -17,7 +17,7 @@ x_stag = transpose(0:pc.dx:pc.l + pc.dx);
 %% User input information:
 num_iterations = 1000000;
 print_interval = 100;
-new_timestep =1*10^-7;
+new_timestep =1*10^-8;
 pc.dt = new_timestep;
 
 % vel_on will tell the code whether to couple the NS equations with the
@@ -27,7 +27,8 @@ vel_on = 0;
 
 [c_n,T_n,u_n,rho_n,eta_n,k_n,rho_old] = initialize_fields(pc,x_coll);
 physical_time = 0;
-
+figure(2);
+plot(x_coll, T_n);
 alpha = find_alpha_fast(pc.k_water, pc.k_ice,pc.L,pc.init_T,pc.wall_T, pc.rho_water, pc.cp_water,pc.T_M);
 
 mass_orig = sum(rho_n(2:pc.N + 1))*pc.dx;
@@ -48,8 +49,8 @@ violates_bounds_count = 0;
 
 % Initialize interface location vector
 t_vec = 0;
-loc_vec = find_interface_loc(c_n, x_coll,pc);
-loc_ana = loc_vec;
+loc_num = find_interface_loc(c_n, x_coll,pc);
+loc_ana = loc_num;
 %f= figure(1);
 
 
@@ -57,7 +58,7 @@ loc_ana = loc_vec;
 
 %% RUN THIS SECTION ONLY TO RESTART WHERE THE SIMULATION LEFT OFF.
 %for count = 1:num_iterations
-while physical_time < 7e-3
+while physical_time < 2.5e-5
     %while find_interface_loc(c_n, x_coll,pc) < pc.l
     
     
@@ -99,8 +100,8 @@ while physical_time < 7e-3
         P_new = zeros(pc.N + 2,1);
     end
     %% Step 6: Solve the energy equation
-    %T_new = solve_temp_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,T_n, c_new,eta_new,rho_new,pc.wall_T,pc);
-    T_new = solve_temp_full_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,T_n,c_new, eta_new,rho_new,c_n,eta_n,rho_n,pc);
+    T_new = solve_temp_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,T_n, c_new,eta_new,rho_new,pc.wall_T,pc);
+   %T_new = solve_temp_full_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,T_n,c_new, eta_new,rho_new,c_n,eta_n,rho_n,pc);
     %% Step 7: correct the ice velocity to zero:
     %u_new_before_correction = u_new;
     u_new = u_new .* (c_new).* pc.rho_water ./ (c_new .* pc.rho_water + (1 - c_new) .* pc.rho_ice);
@@ -134,8 +135,8 @@ while physical_time < 7e-3
     % updates the vectors storing interface location for numerical and
     % analytical solutions.
     t_vec = [t_vec,physical_time];
-    loc_vec = [loc_vec,find_interface_loc(c_n, x_coll,pc)];
-    loc_ana = [loc_ana,interface_location(loc_vec(1), alpha,physical_time,pc.l)];
+    loc_num = [loc_num,find_interface_loc(c_n, x_coll,pc)];
+    loc_ana = [loc_ana,interface_location(loc_num(1), alpha,physical_time,pc.l)];
     
     % increment the iteration counter
     count = count + 1;
@@ -151,83 +152,7 @@ while physical_time < 7e-3
     %% Print
     
     if (mod(count,print_interval) == 0)
-        fprintf("Time step: %d \n Iteration: %d \n",new_timestep,count);
-        fprintf("Physical time: %d \n",physical_time);
-        f= figure(1);
-        n_plots = 3;
-        plot_count = 1;
-        
-        subplot(n_plots,1,plot_count);
-        plot(x_coll,c_new); % plot phase field after one step
-        title("phase field");
-        xlim([x_coll(1), x_stag(end)])
-        ylim([0 1])
-        plot_count = plot_count + 1;
-        
-        subplot(n_plots,1,plot_count);
-        plot(x_coll,T_new);
-        title('Temp');
-        xlim([x_coll(1), x_stag(end)])
-        ylim([pc.wall_T - 2 pc.init_T])
-        plot_count = plot_count + 1;
-        
-        
-        
-        %         subplot(n_plots,1,3);
-        %         plot(x_stag,u_new);
-        %         title("velocity");
-        %         xlim([x_coll(1), x_stag(end)])
-        %         %ylim([0 1e-4])
-        %
-        %         subplot(n_plots,1,4);
-        %         plot(x_coll,P_new);
-        %         title('Pressure');
-        %         xlim([x_coll(1), x_stag(end)])
-        %         %ylim([-1 10])
-        %
-        %
-        subplot(n_plots,1,plot_count);
-        plot(t_vec,loc_vec);
-        hold on;
-        plot(t_vec, loc_ana);
-        hold off;
-        legend('num','ana');
-        title('Interface Location');
-        %
-        %
-        %
-        %         subplot(n_plots,1,6);
-        %         hist = 4999;
-        %         plot(t_vec(count - hist:end),loc_vec(count - hist:end));
-        %         hold on;
-        %         [A,B] = rootfit(t_vec(count - hist:end),loc_vec(count - hist:end));
-        %         plot(t_vec(count - hist:end), A*sqrt(t_vec(count - hist:end)) + B);
-        %         hold off;
-        %         legend('num','ana');
-        %         title('Fit to last 1000 pts');
-        
-        %xlim([x_coll(1), x_stag(end)])
-        %ylim([0 pc.l])
-        %       subplot(n_plots,1,5);
-        %         plot(x_stag,u_star);
-        %         title('U Star');
-        %         xlim([x_coll(1), x_stag(end)])
-        %
-        %         subplot(n_plots,1,6);
-        %         plot(x_coll, c_diff);
-        %         title('c diff');
-        %         xlim([x_coll(1), x_stag(end)])
-        %max(abs(u_diff))
-
-        
-        
-        
-        %         subplot(n_plots,1,7);
-        %         plot(x_stag,RU_n_func(rho_new, eta_new, pc, c_new,u_new));
-        %         title('RUn function');
-        %         xlim([x_coll(1), x_stag(end)])
-        drawnow();
-        fprintf("graphs updated. \n");
+ plot_function(x_coll, x_stag,pc,c_new, T_new,t_vec, loc_ana,loc_num,count,physical_time);        
         
         %% Export graphics and data
         %imcount = imcount + 1;
@@ -250,7 +175,7 @@ while physical_time < 7e-3
         end
     end
     
-end
+ end
 % figure(1);
 % n_plots = 4;
 % subplot(n_plots,1,1);
