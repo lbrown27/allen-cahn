@@ -16,8 +16,8 @@ x_stag = transpose(0:pc.dx:pc.l + pc.dx);
 
 %% User input information:
 num_iterations = 1000000;
-print_interval = 100;
-new_timestep =.5*10^-7;
+print_interval = 400;
+new_timestep =.25*10^-7*10^6/pc.N^2;
 pc.dt = new_timestep;
 
 % vel_on will tell the code whether to couple the NS equations with the
@@ -58,7 +58,7 @@ loc_ana = loc_num;
 
 %% RUN THIS SECTION ONLY TO RESTART WHERE THE SIMULATION LEFT OFF.
 %for count = 1:num_iterations
-while physical_time < 1.5e-3
+while physical_time < .1
     %while find_interface_loc(c_n, x_coll,pc) < pc.l
     
     
