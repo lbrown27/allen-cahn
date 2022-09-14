@@ -1,6 +1,6 @@
 function pc = init_stefan_arezoo()
 %% Initializes constants of the problem according to the first test case.
-N = 2000;
+N = 1000;
 l = 1;
 dx = l / (N);
 sigma_c = .0317;
@@ -15,6 +15,7 @@ pc.l = l;
 pc.dx = dx;
 pc.sigma_c = sigma_c;
 pc.ksi_c = 7.0711e-04;% from arezoo, initial multiple term added by me
+%pc.ksi_c = 5*dx;%7.0711e-04;% from arezoo, initial multiple term added by me
 %pc.ksi_c = 7.0711e-02;% ARTIFICIALLY CHANGED TO TEST T_INIT FUNCTION.
 
 pc.x_init = pc.l/2
