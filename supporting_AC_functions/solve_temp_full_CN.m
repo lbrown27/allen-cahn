@@ -27,9 +27,18 @@ F = -.5*rhs_ac_arezoo_for_implicit_T(c_new,u_new,T_n,eta_new,rho_new, pc,0)*pc.r
     
     
     A_temp(1,:) = 0;
+    
+if strcmp(pc.left_BC,'Dirichlet')
     A_temp(1,1) = 1;
     A_temp(1,2) = 1;
     RHS(1) = 2*pc.wall_T;
+elseif strcmp(pc.left_BC,'Neumann')
+    A_temp(1,1) = 1;
+    A_temp(1,2) = -1;
+    RHS(1) = 0;
+else
+    error("Error: Boundary condition not supported.\n")
+end
         
     % solve:
     T_new = A_temp\RHS;

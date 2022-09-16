@@ -1,6 +1,6 @@
 function pc = init_stefan_arezoo()
 %% Initializes constants of the problem according to the first test case.
-N = 500;
+N = 1000;
 l = 1;
 dx = l / (N);
 sigma_c = .0317;
@@ -14,11 +14,11 @@ pc.N = N;
 pc.l = l;
 pc.dx = dx;
 pc.sigma_c = sigma_c;
-pc.ksi_c = 7.0711e-04*1000/N;% from arezoo, initial multiple term added by me
+pc.ksi_c = 1.5*7.0711e-04*1000/N;% from arezoo, initial multiple term added by me
 %pc.ksi_c = 5*dx;%7.0711e-04;% from arezoo, initial multiple term added by me
 %pc.ksi_c = 7.0711e-02;% ARTIFICIALLY CHANGED TO TEST T_INIT FUNCTION.
 
-pc.x_init = pc.l/2
+pc.x_init = .8;
 pc.thickness_num_pts = pc.ksi_c / dx;
 pc.T_M = 1;
 pc.L = .53; % latent heat of freezing
@@ -28,7 +28,8 @@ pc.mu = pc.gamma; %% might need to tune this too.
 pc.nu = 1;
 pc.eta_water = 1;
 pc.eta_ice = pc.eta_water;
-
+pc.left_BC = 'Neumann';
+pc.left_material = 'ice';
 pc.k_water = 0.05;
 pc.k_ice = 1; %change
 
@@ -38,9 +39,15 @@ pc.rho_ice = pc.rho_water; % change!
 pc.cp_water = 1;
 pc.cp_ice = pc.cp_water;% change!
 
+pc.thermal_diff_ice = pc.k_ice / (pc.rho_ice * pc.cp_ice);
+pc.thermal_diff_water = pc.k_water / (pc.rho_water * pc.cp_water);
+
 pc.Mc = 1/(pc.nu*pc.ksi_c^2 *pc.L);
 
 pc.lambda = 1/(pc.nu * pc.Mc);
 pc.wall_T = 1.1;
 pc.init_T = 1.53;
+
+pc.alpha = find_alpha_fast(pc.k_water, pc.k_ice,pc.L,pc.init_T,pc.wall_T, pc.rho_water, pc.cp_water,pc.T_M);
+
 end

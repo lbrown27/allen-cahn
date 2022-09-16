@@ -10,7 +10,7 @@ h_prime = h_prime_func(c,T,pc.T_M);
 %A = 3 .* pc.sigma_c ./(pc.ksi_c) .* g_prime; % HILL TERM W/ g'(c)
 A = -pc.Mc *pc.lambda /pc.ksi_c^2 * g_prime;
 B =  -pc.Mc * pc.rho_water .* pc.L .* ((pc.T_M - T)./pc.T_M).*h_prime; % LATENT HEAT TERM W/ h'(c)
-
+%B = -pc.mu / pc.ksi_c .*(pc.T_M - T).*(c.*(1-c)); % LATENT HEAT TERM W/ h'(c) according to BOETTIGER GEOMETRIC.
 fc_deriv = A + B;
 %fc_deriv = dfc_dc(c, pc, T,rho);
 for i = 2:pc.N + 1
@@ -22,7 +22,7 @@ for i = 2:pc.N + 1
         Advection = 0;
     end
     laplacian_c = (c(i+1) - 2 * c(i) + c(i-1))/pc.dx^2;
-    B = pc.Mc * pc.lambda* laplacian_c; % DIFFUSION-LIKE TERM
+    B = pc.Mc * pc.lambda* laplacian_c; % DIFFUSION-LIKE TERM, added 2 to convert from sqrt(2) stable soln to 2.
     
     %C = -1*pc.Mc*fc_deriv(i); % FREE ENERGY DERIVATIVE
     D = (u(i_plus) - u(i_minus))/pc.dx * c(i);

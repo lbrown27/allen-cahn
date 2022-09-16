@@ -1,4 +1,4 @@
-clear all;
+%clear all;
 %close all;
 clc;
 addpath('supporting_AC_functions')
@@ -16,8 +16,8 @@ x_stag = transpose(0:pc.dx:pc.l + pc.dx);
 
 %% User input information:
 num_iterations = 1000000;
-print_interval = 400;
-new_timestep =.25*10^-7*10^6/pc.N^2;
+print_interval = 4000;
+new_timestep =5*10^-7*10^6/pc.N^2;
 pc.dt = new_timestep;
 
 % vel_on will tell the code whether to couple the NS equations with the
@@ -29,7 +29,6 @@ vel_on = 0;
 physical_time = 0;
 figure(2);
 plot(x_coll, T_n);
-alpha = find_alpha_fast(pc.k_water, pc.k_ice,pc.L,pc.init_T,pc.wall_T, pc.rho_water, pc.cp_water,pc.T_M);
 
 mass_orig = sum(rho_n(2:pc.N + 1))*pc.dx;
 
@@ -100,8 +99,8 @@ while physical_time < .1
         P_new = zeros(pc.N + 2,1);
     end
     %% Step 6: Solve the energy equation
-    T_new = solve_temp_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,T_n, c_new,eta_new,rho_new,pc.wall_T,pc);
-   %T_new = solve_temp_full_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,T_n,c_new, eta_new,rho_new,c_n,eta_n,rho_n,pc);
+   % T_new = solve_temp_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,T_n, c_new,eta_new,rho_new,pc.wall_T,pc);
+   T_new = solve_temp_full_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,T_n,c_new, eta_new,rho_new,c_n,eta_n,rho_n,pc);
     %% Step 7: correct the ice velocity to zero:
     %u_new_before_correction = u_new;
     u_new = u_new .* (c_new).* pc.rho_water ./ (c_new .* pc.rho_water + (1 - c_new) .* pc.rho_ice);
@@ -136,7 +135,7 @@ while physical_time < .1
     % analytical solutions.
     t_vec = [t_vec,physical_time];
     loc_num = [loc_num,find_interface_loc(c_n, x_coll,pc)];
-    loc_ana = [loc_ana,interface_location(loc_num(1), alpha,physical_time,pc.l)];
+    loc_ana = [loc_ana,interface_location(loc_num(1), pc.alpha,physical_time,pc.l)];
     
     % increment the iteration counter
     count = count + 1;
