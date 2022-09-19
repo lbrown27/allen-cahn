@@ -173,7 +173,7 @@ while physical_time < .1
             violates_bounds_count = violates_bounds_count + 1;
         end
     end
-    
+  integral_thickness_water_side = displacement_thickness(c_new,x_coll,pc)  
  end
 % figure(1);
 % n_plots = 4;
