@@ -1,9 +1,9 @@
-function plot_function(x_coll, x_stag,pc,c_new, T_new,t_vec, loc_ana,loc_num,count,physical_time)
+function plot_function(x_coll, x_stag,pc,c_new, T_new,t_vec, loc_ana,loc_num,count,physical_time,u_new,P_new)
 
 fprintf("Time step: %d \n Iteration: %d \n",pc.dt,count);
 fprintf("Physical time: %d \n",physical_time);
 f= figure(1);
-n_plots = 3;
+n_plots = 5;
 plot_count = 1;
 
 subplot(n_plots,1,plot_count);
@@ -20,21 +20,24 @@ xlim([x_coll(1), x_stag(end)])
 ylim([pc.wall_T - 2 pc.init_T])
 plot_count = plot_count + 1;
 
+if (pc.vel_on == 1)
 
+        subplot(n_plots,1,plot_count);
+        plot(x_stag,u_new);
+        title("velocity");
+        xlim([x_coll(1), x_stag(end)])
+        plot_count = plot_count + 1;
 
-%         subplot(n_plots,1,3);
-%         plot(x_stag,u_new);
-%         title("velocity");
-%         xlim([x_coll(1), x_stag(end)])
-%         %ylim([0 1e-4])
-%
-%         subplot(n_plots,1,4);
-%         plot(x_coll,P_new);
-%         title('Pressure');
-%         xlim([x_coll(1), x_stag(end)])
-%         %ylim([-1 10])
-%
-%
+        %ylim([0 1e-4])
+
+        subplot(n_plots,1,plot_count);
+        plot(x_coll,P_new);
+        title('Pressure');
+        xlim([x_coll(1), x_stag(end)])
+        plot_count = plot_count + 1;
+
+        %ylim([-1 10])
+end
 subplot(n_plots,1,plot_count);
 plot(t_vec,loc_num);
 hold on;

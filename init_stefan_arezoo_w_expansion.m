@@ -1,4 +1,4 @@
-function pc = init_stefan_arezoo()
+function pc = init_stefan_arezoo_w_expansion()
 %% Initializes constants of the problem according to the first test case.
 % note that the values for parameters chosen in this test case are not
 % realistic for a real icing problem.
@@ -10,7 +10,7 @@ dt = 10^-9;
 
 % vel_on will tell the code whether to couple the NS equations with the
 % flow.
-pc.vel_on = 0;
+pc.vel_on = 1;
 
 pc.N = 1000;
 pc.l = 1;
@@ -33,7 +33,6 @@ pc.mu = 4*10^3; %% might need to tune this too.
 
 pc.gamma = 2.5 * 10^-4; %% MIGHT NEED TO TUNE THIS!
 pc.mu = 4*10^3; %% might need to tune this too.
-pc.mu = 4*10^3; %% might need to tune this too.
 
 %% END EXPERIMENTAL.
 
@@ -46,7 +45,8 @@ pc.k_water = 0.05;
 pc.k_ice = 1; %change
 
 pc.rho_water = 1;
-pc.rho_ice = pc.rho_water; % change!
+expansion_factor = 1;
+pc.rho_ice = pc.rho_water*expansion_factor; % change!
 
 pc.cp_water = 1;
 pc.cp_ice = pc.cp_water;% change!

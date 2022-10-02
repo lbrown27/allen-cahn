@@ -15,14 +15,12 @@ x_coll = transpose(-pc.dx / 2:pc.dx:pc.l + pc.dx / 2);
 x_stag = transpose(0:pc.dx:pc.l + pc.dx);
 
 %% User input information:
-num_iterations = 1000000;
-print_interval = 4000;
+num_iterations = 2000000;
+print_interval = 1000;
 new_timestep =5*10^-7*10^6/pc.N^2;
 pc.dt = new_timestep;
 
-% vel_on will tell the code whether to couple the NS equations with the
-% flow.
-vel_on = 0;
+
 %% Initialize field
 
 [c_n,T_n,u_n,rho_n,eta_n,k_n,rho_old] = initialize_fields(pc,x_coll);
@@ -52,14 +50,10 @@ loc_num = find_interface_loc(c_n, x_coll,pc);
 loc_ana = loc_num;
 %f= figure(1);
 
-
-
-
 %% RUN THIS SECTION ONLY TO RESTART WHERE THE SIMULATION LEFT OFF.
-%for count = 1:num_iterations
-while physical_time < .1
-    %while find_interface_loc(c_n, x_coll,pc) < pc.l
-    
+for count = 1:num_iterations
+%while physical_time < .1
+%while find_interface_loc(c_n, x_coll,pc) < pc.l
     
     %% Step 1: Calculate c at time n + 1 using the Allen-Cahn equation.
     % copy old phase field to storage
@@ -80,7 +74,7 @@ while physical_time < .1
     rho_cp_n = pc.rho_water * pc.cp_water * c_n + pc.rho_ice * pc.cp_ice * (1 - c_n);
     rho_cp_new = pc.rho_water * pc.cp_water * c_new + pc.rho_ice * pc.cp_ice * (1 - c_new);
     %% Step 3: Find the approximate velocity u* at time step n+1 using the momentum equation SANS pressure term.
-    if vel_on == 1
+    if pc.vel_on == 1
         %u_star = explicit_solve(rho_n, rho_new, eta_n, pc, c_n, u_n,rho_old,eta_old, c_old,u_old);
         u_star = backward_euler_momentum_solve(rho_new, eta_new, pc,u_n,rho_n, eta_n, c_n, c_new);
         
@@ -151,7 +145,7 @@ while physical_time < .1
     %% Print
     
     if (mod(count,print_interval) == 0)
- plot_function(x_coll, x_stag,pc,c_new, T_new,t_vec, loc_ana,loc_num,count,physical_time);        
+ plot_function(x_coll, x_stag,pc,c_new, T_new,t_vec, loc_ana,loc_num,count,physical_time,u_new,P_new);        
         
         %% Export graphics and data
         %imcount = imcount + 1;
@@ -173,7 +167,7 @@ while physical_time < .1
             violates_bounds_count = violates_bounds_count + 1;
         end
     end
-  integral_thickness_water_side = displacement_thickness(c_new,x_coll,pc)  
+  integral_thickness_water_side = displacement_thickness(c_new,x_coll,pc);  
  end
 % figure(1);
 % n_plots = 4;

@@ -5,7 +5,7 @@ f = zeros(pc.N + 2,1);
 
 %% Calculate the free energy derivative
 g_prime = (4.*c.^3 - 6.*c.^2 + 2.*c);
-h_prime = h_prime_func(c,T,pc.T_M);
+h_prime = h_prime_func(c);
 
 %A = 3 .* pc.sigma_c ./(pc.ksi_c) .* g_prime; % HILL TERM W/ g'(c)
 A = -pc.Mc *pc.lambda /pc.ksi_c^2 * g_prime;
