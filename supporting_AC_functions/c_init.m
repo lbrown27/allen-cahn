@@ -4,7 +4,6 @@ for i = 2:pc.N + 1
     %if x(i) < pc.ksi_c
     % c(i) = 1 / pc.ksi_c * x(i) - 1;
         c(i) = (tanh((x(i) - pc.x_init)/(pc.ksi_c * sqrt(2))) +1)/2;
-
     %end
     
 end

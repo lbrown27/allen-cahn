@@ -16,16 +16,21 @@ pc.N = 1000;
 pc.l = 1;
 pc.dx = pc.l / (pc.N);
 pc.sigma_c = .0317;
+%pc.sigma_c = .0001325;
+
 pc.ksi_c = 1.5*7.0711e-04*1000/pc.N;% from arezoo, initial multiple term added by me
 %pc.ksi_c = 5*dx;%7.0711e-04;% from arezoo, initial multiple term added by me
 %pc.ksi_c = 7.0711e-02;% ARTIFICIALLY CHANGED TO TEST T_INIT FUNCTION.
 
 pc.x_init = .8; % initial location for the water-ice interface.
 pc.thickness_num_pts = pc.ksi_c / pc.dx;
-pc.T_M = 273.15;
+pc.T_M = 1;%273.15;
 pc.L = .53; % latent heat of freezing
 pc.dt = dt;
-pc.gamma = 2.5 * 10^-4; %% MIGHT NEED TO TUNE THIS!
+pc.rho_water = 1;
+
+pc.gamma = 2.5 * 10^-4; %% MIGHT NEED TO TUNE THIS! ORIGINAL!
+pc.gamma = pc.sigma_c * pc.T_M / (pc.rho_water*pc.L); % from definition given by Boettinger.
 pc.mu = 4*10^3; %% might need to tune this too.
 
 
@@ -45,7 +50,6 @@ pc.left_material = 'ice';
 pc.k_water = 0.05;
 pc.k_ice = 1; %change
 
-pc.rho_water = 1;
 pc.rho_ice = pc.rho_water; % change!
 
 pc.cp_water = 1;

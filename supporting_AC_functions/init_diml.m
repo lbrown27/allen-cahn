@@ -3,23 +3,29 @@ function pc = init_diml()
 N = 100;
 l = .001;
 dx = l / (N);
-Mc = 1*10^-3;
-sigma_c = .0317;
-conversion_smallness_factor = 2.64*10^-4 / (4 * 10^-3);
+Mc = 1*10^-5;
+pc.vel_on = 1;
+
+%conversion_smallness_factor = 2.64*10^-4 / (4 * 10^-3);
 %ksi_c = l * conversion_smallness_factor;
 %ksi_c = 26.4 * dx;% from paper
-ksi_c = 1 * dx;
+ksi_c = 3 * dx;
 T_M = 273.15;
 L = 334000; %latent heat of freezing
 dt = 10^-9;
 pc.thickness_num_pts = ksi_c / dx;
 fprintf("Thickness is %f points wide (aim for at least 20!)\n",pc.thickness_num_pts);
 
+pc.left_BC = 'Neumann';
+pc.left_material = 'ice';
+
 pc.N = N;
 pc.l = l;
+pc.x_init = .8*pc.l; % initial location for the water-ice interface.
+
 pc.dx = dx;
 pc.Mc = Mc;
-pc.sigma_c = sigma_c;
+pc.sigma_c = .0317;
 pc.ksi_c = ksi_c;
 pc.T_M = T_M;
 pc.L = L;
@@ -37,5 +43,10 @@ pc.rho_ice = 998; % change!
 pc.cp_water = 4200;
 pc.cp_ice = 2018;% change!
 
+pc.wall_T = -5 + pc.T_M;
+pc.init_T = 0.1 + pc.T_M;
+
 pc.lambda = 3 * sqrt(2) * pc.rho_water*pc.L*pc.gamma *pc.ksi_c/pc.T_M;
+
+pc.alpha = find_alpha_fast(pc.k_water, pc.k_ice,pc.L,pc.init_T,pc.wall_T, pc.rho_water, pc.cp_water,pc.T_M);
 end

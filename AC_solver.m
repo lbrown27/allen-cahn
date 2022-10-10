@@ -10,7 +10,7 @@ addpath('stefan_solver')
 
 
 %% Define physical constants
-pc = init_stefan_arezoo();
+pc = init_diml();
 x_coll = transpose(-pc.dx / 2:pc.dx:pc.l + pc.dx / 2);
 x_stag = transpose(0:pc.dx:pc.l + pc.dx);
 
@@ -18,6 +18,7 @@ x_stag = transpose(0:pc.dx:pc.l + pc.dx);
 num_iterations = 2000000;
 print_interval = 1000;
 new_timestep =5*10^-7*10^6/pc.N^2;
+new_timestep = 1e-7;
 pc.dt = new_timestep;
 
 

@@ -25,7 +25,7 @@ ksi_c_works = 1.5*7.0711e-04*1000/pc.N;% from arezoo, initial multiple term adde
 
 pc.x_init = .8; % initial location for the water-ice interface.
 pc.thickness_num_pts = pc.ksi_c / pc.dx;
-pc.T_M = 1;
+pc.T_M = 273.15;
 T_M_works = 1;
 pc.L = 334000; % latent heat of freezing
 L_works = 1;
@@ -48,7 +48,6 @@ pc.k_water = .5918;
 pc.k_ice = 2.25; %change
 
 pc.rho_water = 998;
-expansion_factor = 1;
 pc.rho_ice = 998;%pc.rho_water*expansion_factor; % change!
 
 % pc.rho_water = 1;
@@ -62,8 +61,9 @@ pc.thermal_diff_ice = pc.k_ice / (pc.rho_ice * pc.cp_ice);
 pc.thermal_diff_water = pc.k_water / (pc.rho_water * pc.cp_water);
 
 
-pc.mu = 4*10^3/ksi_c_works * pc.ksi_c *rho_works / pc.rho_water; %% might need to tune this too.
 pc.mu = 4*10^4/ksi_c_works * pc.ksi_c *rho_works / pc.rho_water; %% might need to tune this too.
+
+%pc.mu = 4*10^2; %% might need to tune this too.
 
 %pc.gamma = 2.5 * 10^-4; %% MIGHT NEED TO TUNE THIS!
 
@@ -71,7 +71,8 @@ pc.mu = 4*10^4/ksi_c_works * pc.ksi_c *rho_works / pc.rho_water; %% might need t
 
 %pc.lambda = 1/(pc.nu * pc.Mc); % Lazy definition from paper.
 
-pc.gamma = 2.5 * 10^-4*pc.sigma_c/sigma_c_works*(L_works/T_M_works)*(pc.T_M/pc.L)/(pc.rho_water); %% MIGHT NEED TO TUNE THIS!
+%pc.gamma = 2.5 * 10^-4*pc.sigma_c/sigma_c_works*(L_works/T_M_works)*(pc.T_M/pc.L)/(pc.rho_water); %% MIGHT NEED TO TUNE THIS!
+pc.gamma = pc.sigma_c * pc.T_M / (pc.rho_water*pc.L); % from definition given by Boettinger.
 
 pc.lambda = 3 * sqrt(2) * pc.rho_water * pc.L * pc.gamma * pc.ksi_c/pc.T_M;
 
