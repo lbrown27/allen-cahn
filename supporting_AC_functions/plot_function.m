@@ -41,9 +41,9 @@ end
 subplot(n_plots,1,plot_count);
 plot(t_vec,loc_num);
 hold on;
-%plot(t_vec, loc_ana);
+plot(t_vec, loc_ana);
 hold off;
-%legend('num','ana');
+legend('num','ana');
 title('Interface Location');
 %
 %

@@ -7,12 +7,16 @@ function T_new = solve_temp_full_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,T_
     % next line technically splits method but i think effect is small.
     h_prime = h_prime_func(c_new);
 
-    A_temp = sparse(diag(rho_cp_new) - .5 * pc.dt * E_new+.5*diag(pc.Mc*pc.L^2*pc.rho_water^2*h_prime*pc.dt/pc.T_M));
+    A_temp = sparse(diag(rho_cp_new) - .5 * pc.dt * E_new+.5*diag(pc.gas_pedal * c_new .* (1-c_new))*pc.rho_water * pc.L * pc.dt/ pc.gamma);
+        % A_temp = sparse(diag(rho_cp_new) - .5 * pc.dt *
+        % E_new+.5*diag(pc.Mc*pc.L^2*pc.rho_water^2*h_prime*pc.dt/pc.T_M));
+        % this was the previous line for allen cahn method.
+
    % A_temp = sparse(diag(rho_cp_new) - .5 * pc.dt * E_new);
     B = (.5 * pc.dt * E_n) * T_n;
-    C = -.5*rhs_ac_arezoo(c_n,T_n,u_n,eta_n,rho_n, pc,0) * pc.dt * pc.rho_water * pc.L;% .* (T_n < 273.15); % IS THIS LINE GOOD?
+    C = -.5*rhs_ac_wrapper(c_n,T_n,u_n,eta_n,rho_n, pc,0) * pc.dt * pc.rho_water * pc.L;% .* (T_n < 273.15); % IS THIS LINE GOOD?
     D = rho_cp_n .* T_n;
-F = -.5*rhs_ac_arezoo_for_implicit_T(c_new,u_new,T_n,eta_new,rho_new, pc,0)*pc.rho_water * pc.L*pc.dt;
+F = -.5*rhs_ac_for_implicit_T_wrapper(c_new,u_new,T_n,eta_new,rho_new, pc,0)*pc.rho_water * pc.L*pc.dt;
     Visc = zeros(pc.N + 2,1);
     for i = 2: pc.N + 1
         Visc(i) = 4/3 * eta_new(i) .* ((u_new(i) - u_new(i - 1)) / pc.dx)^2;

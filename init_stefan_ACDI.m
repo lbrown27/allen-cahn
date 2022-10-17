@@ -1,4 +1,4 @@
-function pc = init_stefan_arezoo()
+function pc = init_stefan_ACDI()
 %% Initializes constants of the problem according to the first test case.
 % note that the values for parameters chosen in this test case are not
 % realistic for a real icing problem.
@@ -66,11 +66,11 @@ pc.lambda = 3 * sqrt(2) * pc.rho_water * pc.L * pc.gamma * pc.ksi_c/pc.T_M;
 pc.Mc = pc.gamma * pc.mu/pc.lambda;
 
 
-pc.wall_T = .1 + pc.T_M;
+pc.wall_T = -.1 + pc.T_M;
 pc.init_T = 0.53 + pc.T_M;
 %pc.init_T = 0.33 + pc.T_M;
 
 
 pc.alpha = find_alpha_fast(pc.k_water, pc.k_ice,pc.L,pc.init_T,pc.wall_T, pc.rho_water, pc.cp_water,pc.T_M);
-pc.gas_pedal = 1000;
+
 end

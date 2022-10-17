@@ -7,16 +7,19 @@ if isempty(n)
     n = 1;
     fp = (rho_new - rho_n)/pc.dt;
 else
-    fp = rhs_ac_arezoo(c_new,T_new,u_n,eta_new,rho_new, pc,1)*(pc.rho_water - pc.rho_ice);
+    fp = rhs_ac_wrapper(c_new,T_new,u_n,eta_new,rho_new, pc,1)*(pc.rho_water - pc.rho_ice);
 end
 %fp = (3 * rho_new - 4 * rho_n + rho_old)/(2 * pc.dt);
 %fp = (rho_new - rho_n)/pc.dt;
 sp = zeros(pc.N + 2,1);
-for i = 2:pc.N + 1
-    i_plus = i;
-    i_minus = i - 1; % indices for flux terms
-    sp(i) = (u_star(i_plus) * (rho_new(i+1) + rho_new(i)) - u_star(i_minus) * (rho_new(i-1) + rho_new(i)))/(2 * pc.dx);
-end
+% for i = 2:pc.N + 1
+%     i_plus = i;
+%     i_minus = i - 1; % indices for flux terms
+%     sp(i) = (u_star(i_plus) * (rho_new(i+1) + rho_new(i)) - u_star(i_minus) * (rho_new(i-1) + rho_new(i)))/(2 * pc.dx);
+% end
+sp = div(rho_new,u_star,pc);
+
+%max(abs(sp - sp2))
 res = fp + sp;
 
 res = res / (pc.dt);

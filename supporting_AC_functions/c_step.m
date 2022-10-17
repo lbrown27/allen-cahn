@@ -3,8 +3,8 @@ function c_next = c_step(c, T,u,c_past,eta, eta_old,rho, pc)
 %rhs_cn = rhs_ac(c,T,u,eta,rho,pc,1);
 %rhs_cn_past = rhs_ac(c,T,u,eta_old,rho,pc,1);
 
-rhs_cn = rhs_ac_arezoo(c,T,u,eta,rho,pc,1);
-rhs_cn_past = rhs_ac_arezoo(c,T,u,eta_old,rho,pc,1);
+rhs_cn = rhs_ac_wrapper(c,T,u,eta,rho,pc,1);
+rhs_cn_past = rhs_ac_wrapper(c,T,u,eta_old,rho,pc,1);
 c_next = (4 * pc.dt * rhs_cn - 2 * pc.dt * rhs_cn_past + 4 * c - c_past)/3;
 if strcmp(pc.left_BC,'Dirichlet')
     c_next(1) = - c_next(2);
