@@ -42,7 +42,4 @@ end
         
     % solve:
     T_new = A_temp\RHS;
-
-
-
 end
