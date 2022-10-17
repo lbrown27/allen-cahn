@@ -18,7 +18,7 @@ pc.dx = pc.l / (pc.N);
 pc.sigma_c = .0317;
 %pc.sigma_c = .0001325;
 
-pc.ksi_c = 1.5*7.0711e-04*1000/pc.N;% from arezoo, initial multiple term added by me
+pc.ksi_c = 2*1.5*7.0711e-04*1000/pc.N;% from arezoo, initial multiple term added by me
 %pc.ksi_c = 5*dx;%7.0711e-04;% from arezoo, initial multiple term added by me
 %pc.ksi_c = 7.0711e-02;% ARTIFICIALLY CHANGED TO TEST T_INIT FUNCTION.
 
