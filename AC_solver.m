@@ -10,7 +10,7 @@ addpath('stefan_solver')
 
 
 %% Define physical constants
-pc = init_diml();
+% = init_diml();
 pc = init_stefan_arezoo();
 x_coll = transpose(-pc.dx / 2:pc.dx:pc.l + pc.dx / 2);
 x_stag = transpose(0:pc.dx:pc.l + pc.dx);
@@ -24,7 +24,7 @@ new_timestep = 1e-7;
 pc.dt = new_timestep;
 
 time_based_printing = 'on';
-print_time_interval = 3; % in clock time seconds.
+print_time_interval = 30; % in clock time seconds.
 print_count = 0;
 %time_based_printing = 'off';
 
@@ -60,7 +60,7 @@ loc_ana = loc_num;
 tic;
 %% RUN THIS SECTION ONLY TO RESTART WHERE THE SIMULATION LEFT OFF.
 %for count = 1:num_iterations
-while physical_time < 1.5e-3
+while physical_time < .1
 %while find_interface_loc(c_n, x_coll,pc) < pc.l
     
     %% Step 1: Calculate c at time n + 1 using the Allen-Cahn equation.
@@ -155,9 +155,13 @@ while physical_time < 1.5e-3
 if toc > print_time_interval * print_count
      plot_function(x_coll, x_stag,pc,c_new, T_new,t_vec, loc_ana,loc_num,count,physical_time,u_new,P_new);  
      print_count = print_count + 1;
+       integral_thickness = [integral_thickness_water_side , displacement_thickness(c_new,x_coll,pc)];
+  displacement_thickness(c_new,x_coll,pc)
 end
     elseif (mod(count,print_interval) == 0)
- plot_function(x_coll, x_stag,pc,c_new, T_new,t_vec, loc_ana,loc_num,count,physical_time,u_new,P_new);        
+ plot_function(x_coll, x_stag,pc,c_new, T_new,t_vec, loc_ana,loc_num,count,physical_time,u_new,P_new);    
+   integral_thickness_water_side = [integral_thickness_water_side , displacement_thickness(c_new,x_coll,pc)];
+  displacement_thickness(c_new,x_coll,pc)
              %% Export graphics and data
         %imcount = imcount + 1;
         %exportgraphics(f,['Img\img_' num2str(imcount) '.png'],'Resolution',300);
@@ -178,7 +182,7 @@ end
             violates_bounds_count = violates_bounds_count + 1;
         end
     end
-  integral_thickness_water_side = displacement_thickness(c_new,x_coll,pc);  
+
  end
 % figure(1);
 % n_plots = 4;

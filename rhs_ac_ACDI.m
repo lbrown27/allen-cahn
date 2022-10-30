@@ -15,8 +15,8 @@ else
 end
 B = div_stag(pc.gas_pedal * pc.ksi_c * grad(c,pc),pc);
 C = div_stag(pc.gas_pedal * -1 * stagger_me(c,pc) .* (1 - stagger_me(c,pc)),pc);
-func = c .* (1 - c);
-%func = 30.*(c- 1).^2.*c.^2;
+%func = c.^2 .* (1 - c).^2;
+func = 30.*(c- 1).^2.*c.^2;
 D = -pc.gas_pedal / (pc.gamma*3*sqrt(2)) .* func.*(pc.T_M - T);
 f = A + B + C + D;
 end
