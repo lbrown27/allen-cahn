@@ -8,11 +8,14 @@ function pc = init_stefan_arezoo()
 dt = 10^-9;
 %fprintf("Thickness is %f points wide (aim for at least 20!)\n",pc.thickness_num_pts);
 
+pc.phase_model = "allen-cahn";
+%pc.phase_model = "acdi";
+
 % vel_on will tell the code whether to couple the NS equations with the
 % flow.
 pc.vel_on = 0;
 
-pc.N = 1000;
+pc.N = 100;
 pc.l = 1;
 pc.dx = pc.l / (pc.N);
 pc.sigma_c = .0317;
@@ -66,7 +69,7 @@ pc.lambda = 3 * sqrt(2) * pc.rho_water * pc.L * pc.gamma * pc.ksi_c/pc.T_M;
 pc.Mc = pc.gamma * pc.mu/pc.lambda;
 
 
-pc.wall_T = .01 + pc.T_M;
+pc.wall_T = .1 + pc.T_M;
 pc.init_T = 0.53 + pc.T_M;
 
 pc.alpha = find_alpha_fast(pc.k_water, pc.k_ice,pc.L,pc.init_T,pc.wall_T, pc.rho_water, pc.cp_water,pc.T_M);

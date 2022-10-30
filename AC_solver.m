@@ -17,11 +17,16 @@ x_stag = transpose(0:pc.dx:pc.l + pc.dx);
 
 %% User input information:
 num_iterations = 20000;
-print_interval = 1000;
+print_interval = 1e8/(pc.N^2);
+print_interval = 10000;
 new_timestep =5*10^-7*10^6/pc.N^2;
 new_timestep = 1e-7;
 pc.dt = new_timestep;
 
+time_based_printing = 'on';
+print_time_interval = 3; % in clock time seconds.
+print_count = 0;
+%time_based_printing = 'off';
 
 %% Initialize field
 
@@ -52,9 +57,10 @@ loc_num = find_interface_loc(c_n, x_coll,pc);
 loc_ana = loc_num;
 %f= figure(1);
 
+tic;
 %% RUN THIS SECTION ONLY TO RESTART WHERE THE SIMULATION LEFT OFF.
 %for count = 1:num_iterations
-while physical_time < .1
+while physical_time < 1.5e-3
 %while find_interface_loc(c_n, x_coll,pc) < pc.l
     
     %% Step 1: Calculate c at time n + 1 using the Allen-Cahn equation.
@@ -145,11 +151,14 @@ while physical_time < .1
     % magic = calculate_residual(c_new,T_new,u_new,eta_new,rho_new, pc);  
     % max(magic)
     %% Print
-    
-    if (mod(count,print_interval) == 0)
+    if strcmp(time_based_printing,'on')
+if toc > print_time_interval * print_count
+     plot_function(x_coll, x_stag,pc,c_new, T_new,t_vec, loc_ana,loc_num,count,physical_time,u_new,P_new);  
+     print_count = print_count + 1;
+end
+    elseif (mod(count,print_interval) == 0)
  plot_function(x_coll, x_stag,pc,c_new, T_new,t_vec, loc_ana,loc_num,count,physical_time,u_new,P_new);        
-        
-        %% Export graphics and data
+             %% Export graphics and data
         %imcount = imcount + 1;
         %exportgraphics(f,['Img\img_' num2str(imcount) '.png'],'Resolution',300);
         %save('locs.mat','loc_vec');
