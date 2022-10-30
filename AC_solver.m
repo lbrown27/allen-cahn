@@ -10,6 +10,7 @@ addpath('stefan_solver')
 
 
 %% Define physical constants
+pc = init_diml();
 pc = init_stefan_arezoo();
 x_coll = transpose(-pc.dx / 2:pc.dx:pc.l + pc.dx / 2);
 x_stag = transpose(0:pc.dx:pc.l + pc.dx);
@@ -52,8 +53,8 @@ loc_ana = loc_num;
 %f= figure(1);
 
 %% RUN THIS SECTION ONLY TO RESTART WHERE THE SIMULATION LEFT OFF.
-for count = 1:num_iterations
-%while physical_time < .1
+%for count = 1:num_iterations
+while physical_time < .1
 %while find_interface_loc(c_n, x_coll,pc) < pc.l
     
     %% Step 1: Calculate c at time n + 1 using the Allen-Cahn equation.
@@ -94,8 +95,8 @@ for count = 1:num_iterations
         P_new = zeros(pc.N + 2,1);
     end
     %% Step 6: Solve the energy equation
-   % T_new = solve_temp_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,T_n, c_new,eta_new,rho_new,pc.wall_T,pc);
-   T_new = solve_temp_full_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,T_n,c_new, eta_new,rho_new,c_n,eta_n,rho_n,pc);
+    T_new = solve_temp_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,T_n, c_new,eta_new,rho_new,pc.wall_T,pc);
+   %T_new = solve_temp_full_CN(rho_cp_n, rho_cp_new,u_new,u_n,k_new, k_n,T_n,c_new, eta_new,rho_new,c_n,eta_n,rho_n,pc);
     %% Step 7: correct the ice velocity to zero:
     %u_new_before_correction = u_new;
     u_new = u_new .* (c_new).* pc.rho_water ./ (c_new .* pc.rho_water + (1 - c_new) .* pc.rho_ice);

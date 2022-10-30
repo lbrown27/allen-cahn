@@ -7,7 +7,7 @@ if isempty(n)
     n = 1;
     fp = (rho_new - rho_n)/pc.dt;
 else
-    fp = rhs_ac_arezoo(c_new,T_new,u_n,eta_new,rho_new, pc,1)*(pc.rho_water - pc.rho_ice);
+    fp = rhs_ac_wrapper(c_new,T_new,u_n,eta_new,rho_new, pc,1)*(pc.rho_water - pc.rho_ice);
 end
 %fp = (3 * rho_new - 4 * rho_n + rho_old)/(2 * pc.dt);
 %fp = (rho_new - rho_n)/pc.dt;

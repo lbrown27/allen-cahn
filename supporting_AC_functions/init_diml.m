@@ -1,6 +1,6 @@
 function pc = init_diml()
 %% Initializes constants of the problem according to the first test case.
-N = 100;
+N = 400;
 l = .001;
 dx = l / (N);
 Mc = 1*10^-5;
@@ -11,6 +11,7 @@ pc.vel_on = 1;
 %ksi_c = 26.4 * dx;% from paper
 ksi_c = 3 * dx;
 T_M = 273.15;
+
 L = 334000; %latent heat of freezing
 dt = 10^-9;
 pc.thickness_num_pts = ksi_c / dx;
@@ -43,8 +44,8 @@ pc.rho_ice = 998; % change!
 pc.cp_water = 4200;
 pc.cp_ice = 2018;% change!
 
-pc.wall_T = -5 + pc.T_M;
-pc.init_T = 0.1 + pc.T_M;
+pc.wall_T = .01 + pc.T_M;
+pc.init_T = .53 + pc.T_M;
 
 pc.lambda = 3 * sqrt(2) * pc.rho_water*pc.L*pc.gamma *pc.ksi_c/pc.T_M;
 
