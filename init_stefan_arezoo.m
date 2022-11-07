@@ -15,7 +15,7 @@ pc.phase_model = "acdi";
 % flow.
 pc.vel_on = 0;
 
-pc.N = 80;
+pc.N = 100;
 pc.l = 1;
 pc.dx = pc.l / (pc.N);
 pc.sigma_c = .0317;
@@ -69,7 +69,7 @@ pc.lambda = 3 * sqrt(2) * pc.rho_water * pc.L * pc.gamma * pc.ksi_c/pc.T_M;
 pc.Mc = pc.gamma * pc.mu/pc.lambda;
 
 
-pc.wall_T = .01 + pc.T_M;
+pc.wall_T = .1 + pc.T_M;
 pc.init_T = 0.53 + pc.T_M;
 
 % pc.wall_T = pc.T_M;

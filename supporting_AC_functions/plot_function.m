@@ -80,5 +80,9 @@ title('Interface Location');
 %         xlim([x_coll(1), x_stag(end)])
 drawnow();
 fprintf("graphs updated. \n");
+fprintf("REMINDERS/CODE ALTERATIONS: \n");
+
+fprintf("Using an experimental C term in rhs_ac_ACDI.m for the interpolation function of diffusion term. \n");
+
 
 end
