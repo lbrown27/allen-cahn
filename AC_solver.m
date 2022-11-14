@@ -1,5 +1,5 @@
-%clear all;
-%close all;
+clear all;
+close all;
 clc;
 addpath('supporting_AC_functions')
 addpath('stefan_solver')
@@ -7,7 +7,9 @@ addpath('stefan_solver')
 % represents outflow boundary conditions.
 % length of domain
 % calculate dx based off l and N
-
+fprintf("NOTES: \n");
+fprintf("The sharpening term from the acdi method is currently overwritten to the ac sharpening term.\n");
+fprintf("Added an experimental factor of 4 in the cdi sharpening term.");
 
 %% Define physical constants
 % = init_diml();

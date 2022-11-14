@@ -8,7 +8,7 @@ function pc = init_stefan_arezoo()
 dt = 10^-9;
 %fprintf("Thickness is %f points wide (aim for at least 20!)\n",pc.thickness_num_pts);
 
-%pc.phase_model = "allen-cahn";
+pc.phase_model = "allen-cahn";
 pc.phase_model = "acdi";
 
 % vel_on will tell the code whether to couple the NS equations with the

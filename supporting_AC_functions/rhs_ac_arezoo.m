@@ -13,23 +13,33 @@ Phase_Change =  -pc.Mc * pc.rho_water .* pc.L .* ((pc.T_M - T)./pc.T_M).*h_prime
 %B = -pc.mu / pc.ksi_c .*(pc.T_M - T).*(c.*(1-c)); % LATENT HEAT TERM W/ h'(c) according to BOETTIGER GEOMETRIC.
 fc_deriv = Sharpening + Phase_Change;
 %fc_deriv = dfc_dc(c, pc, T,rho);
+
+Advection = zeros(pc.N + 2,1);
+if (adv == 1)
+    for i = 2:pc.N + 1
+        i_plus = i;
+        i_minus = i - 1;
+        Advection(i) = -(u(i_plus)*(c(i+1) + c(i)) - u(i_minus) * (c(i) + c(i - 1)))/(2*pc.dx); % ADVECTION TERM
+    end
+end % else, Advection = 0.
+
+
+laplacian_c = zeros(pc.N + 2,1);
+Diffusion = zeros(pc.N + 2,1);
+Dilatation = zeros(pc.N + 2,1);
+
 for i = 2:pc.N + 1
     i_plus = i;
     i_minus = i - 1;
-    if (adv == 1)
-    Advection = -(u(i_plus)*(c(i+1) + c(i)) - u(i_minus) * (c(i) + c(i - 1)))/(2*pc.dx); % ADVECTION TERM
-    else 
-        Advection = 0;
-    end
-    laplacian_c = (c(i+1) - 2 * c(i) + c(i-1))/pc.dx^2;
-    Diffusion = pc.Mc * pc.lambda* laplacian_c; % DIFFUSION-LIKE TERM, added 2 to convert from sqrt(2) stable soln to 2.
-    
-    %C = -1*pc.Mc*fc_deriv(i); % FREE ENERGY DERIVATIVE
-    Dilatation = (u(i_plus) - u(i_minus))/pc.dx * c(i);
-    %B = 0;
-    %B = pc.Mc * 6 * pc.ksi_c^2 *(c(i+1) - 2 * c(i) + c(i-1))/pc.dx^2; % DIFFUSION-LIKE TERM, CHANGED!
-
-    f(i) = Advection+Diffusion+ fc_deriv(i)+ Dilatation;
-    
+    laplacian_c(i) = (c(i+1) - 2 * c(i) + c(i-1))/pc.dx^2;
+    Dilatation(i) = (u(i_plus) - u(i_minus))/pc.dx * c(i);
 end
+
+Diffusion = pc.Mc * pc.lambda* laplacian_c; % DIFFUSION-LIKE TERM, added 2 to convert from sqrt(2) stable soln to 2.
+
+%B = 0;
+%B = pc.Mc * 6 * pc.ksi_c^2 *(c(i+1) - 2 * c(i) + c(i-1))/pc.dx^2; % DIFFUSION-LIKE TERM, CHANGED!
+
+f = Advection+Diffusion+ fc_deriv+ Dilatation;
+
 end
