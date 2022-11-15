@@ -1,6 +1,7 @@
-function psi = distance_field(c,x_coll,pc)
+function psi = distance_field(c)
 % returns a collocated field of distances from the interface location.
-int_loc = find_interface_loc(c, x_coll,pc);
+%int_loc = find_interface_loc(c, x_coll,pc);
+small_num = 1e-16;
 
-psi = x_coll - int_loc;
+psi = x_small_num*log((c+small_num)/(1-c+small_num));
 end

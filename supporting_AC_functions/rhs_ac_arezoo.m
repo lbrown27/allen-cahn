@@ -39,7 +39,9 @@ Diffusion = pc.Mc * pc.lambda* laplacian_c; % DIFFUSION-LIKE TERM, added 2 to co
 
 %B = 0;
 %B = pc.Mc * 6 * pc.ksi_c^2 *(c(i+1) - 2 * c(i) + c(i-1))/pc.dx^2; % DIFFUSION-LIKE TERM, CHANGED!
-
+% figure();
+% x_coll = transpose(-pc.dx / 2:pc.dx:pc.l + pc.dx / 2);
+% plot(x_coll,Diffusion+fc_deriv);
 f = Advection+Diffusion+ fc_deriv+ Dilatation;
 
 end

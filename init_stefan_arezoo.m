@@ -5,15 +5,16 @@ function pc = init_stefan_arezoo()
 %conversion_smallness_factor = 2.64*10^-4 / (4 * 10^-3);
 %ksi_c = l * conversion_smallness_factor;
 %ksi_c = 26.4 * dx;% from paper
-dt = 10^-9;
+dt = 10^-10;
 %fprintf("Thickness is %f points wide (aim for at least 20!)\n",pc.thickness_num_pts);
 
+
+% phase model. OPTIONS: "allen-cahn", "acdi", and "cdi".
 pc.phase_model = "allen-cahn";
-pc.phase_model = "acdi";
 
 % vel_on will tell the code whether to couple the NS equations with the
 % flow.
-pc.vel_on = 0;
+pc.vel_on = 1;
 
 pc.N = 100;
 pc.l = 1;
@@ -53,7 +54,7 @@ pc.left_material = 'ice';
 pc.k_water = 0.05;
 pc.k_ice = 1; %change
 
-pc.rho_ice = pc.rho_water; % change!
+pc.rho_ice = pc.rho_water*.9999999; % change!
 
 pc.cp_water = 1;
 pc.cp_ice = pc.cp_water;% change!

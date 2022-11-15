@@ -1,5 +1,5 @@
 clear all;
-close all;
+%close all;
 clc;
 addpath('supporting_AC_functions')
 addpath('stefan_solver')
@@ -18,15 +18,15 @@ x_coll = transpose(-pc.dx / 2:pc.dx:pc.l + pc.dx / 2);
 x_stag = transpose(0:pc.dx:pc.l + pc.dx);
 
 %% User input information:
-num_iterations = 20000;
+num_iterations = 1e8;
 print_interval = 1e8/(pc.N^2);
-print_interval = 10000;
+print_interval = 1;
 new_timestep =5*10^-7*10^6/pc.N^2;
 new_timestep = 1e-7;
 pc.dt = new_timestep;
 
-time_based_printing = 'on';
-print_time_interval = 5; % in clock time seconds.
+time_based_printing = 'off';
+print_time_interval = 10; % in clock time seconds.
 print_count = 0;
 %time_based_printing = 'off';
 
@@ -62,8 +62,9 @@ loc_ana = loc_num;
 
 tic;
 %% RUN THIS SECTION ONLY TO RESTART WHERE THE SIMULATION LEFT OFF.
-%for count = 1:num_iterations
-while physical_time < .1
+for count = 1:num_iterations
+%while physical_time < .1
+   %pause(2);
     %while find_interface_loc(c_n, x_coll,pc) < pc.l
 
     %% Step 1: Calculate c at time n + 1 using the Allen-Cahn equation.
@@ -86,11 +87,10 @@ while physical_time < .1
     rho_cp_new = pc.rho_water * pc.cp_water * c_new + pc.rho_ice * pc.cp_ice * (1 - c_new);
     %% Step 3: Find the approximate velocity u* at time step n+1 using the momentum equation SANS pressure term.
     if pc.vel_on == 1
-        %u_star = explicit_solve(rho_n, rho_new, eta_n, pc, c_n, u_n,rho_old,eta_old, c_old,u_old);
+      %  u_star = explicit_solve(rho_n, rho_new, eta_n, pc, c_n, u_n,rho_old,eta_old, c_old,u_old);
         u_star = backward_euler_momentum_solve(rho_new, eta_new, pc,u_n,rho_n, eta_n, c_n, c_new);
-
         %% Step 4: Calculate the pressure field by solving a poisson equation
-        RHS_Pres = RHS_PE(rho_new,pc,u_n,c_new, T_n,eta_new, u_star,rho_n,rho_old);
+        RHS_Pres = RHS_PE(rho_new,pc,u_n,c_new, T_n,eta_new, u_star,rho_n,rho_old,x_coll);
         P_new = matrix_solve(RHS_Pres,pc,A_pres);
 
         %% Step 5: Correct velocity to satisfy continuity equation, given the pressure field
@@ -148,7 +148,7 @@ while physical_time < .1
     %% Analytics
 
     % calculates the timescales associated with terms in the AC equation:
-    [t_a, t_d, t_f] = calculate_timescales(pc, u_n,rho_n);
+   % [t_a, t_d, t_f] = calculate_timescales(pc, u_n,rho_n);
     % alpha_num = mean((loc_vec - loc_vec(1))/(loc_ana - loc_vec(1)))*alpha
 
     % magic = calculate_residual(c_new,T_new,u_new,eta_new,rho_new, pc);
