@@ -3,7 +3,7 @@ function [f,Advection,Diffusion,Sharpening,Phase_Change] = rhs_ACDI(c,T,u, pc,ad
 % discretizaition. Valid for all points except the boundary points (1 and N+2)
 f = zeros(pc.N + 2,1);
 
-psi = distance_fn(c);
+psi = distance_field(c,pc);
 
 if (adv == 1)    
     Advection = zeros(pc.N + 2,1);
@@ -21,7 +21,7 @@ Diffusion = div_stag(pc.gas_pedal * pc.ksi_c * grad(c,pc),pc.N + 2, pc.dx); %dif
 Sharpening= pc.gas_pedal * (-1/4) * div_stag(1-tanh(psi/(2*pc.ksi_c)),pc.N + 2,pc.dx); % ORIGINAL!
 
 exponent = 2;
-func = (1-c).^exponent.*c.^exponent*.0683*2;
+func = (1-c).^exponent.*c.^exponent*30/(6*sqrt(2));
 Phase_Change = -pc.gas_pedal / (pc.gamma) .* func.*(pc.T_M - T); % best result was obtained by dividing by 3 * sqrt(5).
 f = Advection + Diffusion + Sharpening + Phase_Change;
 end

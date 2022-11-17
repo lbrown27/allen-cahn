@@ -49,4 +49,11 @@ eta_old = eta_n;
 eta_new = eta_n;
 k_n = c_n*pc.k_water + (1- c_n) * pc.k_ice;
 
+cp_n = pc.cp_water .* c_n + pc.cp_ice .* (1 - c_n);
+
+
+T_alternative = T_initialization(c_n,rho_n, cp_n,x_coll,pc);
+
+
+%T_n = T_alternative;
 end

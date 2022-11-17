@@ -18,14 +18,14 @@ x_coll = transpose(-pc.dx / 2:pc.dx:pc.l + pc.dx / 2);
 x_stag = transpose(0:pc.dx:pc.l + pc.dx);
 
 %% User input information:
-num_iterations = 34000000;
+num_iterations = 3400;
 print_interval = 1e8/(pc.N^2);
 print_interval = 1;
 new_timestep =5*10^-7*10^6/pc.N^2;
-new_timestep = 2e-7;
+new_timestep = 1e-7;
 pc.dt = new_timestep;
 
-time_based_printing = 'on';
+time_based_printing = 'off';
 print_time_interval = 10; % in clock time seconds.
 print_count = 0;
 
